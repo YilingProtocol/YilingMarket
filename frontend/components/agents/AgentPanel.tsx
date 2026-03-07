@@ -106,7 +106,7 @@ export function AgentPanel({
               {agentCount} Agent{agentCount !== 1 ? "s" : ""}
             </p>
             <p className="text-base font-semibold text-foreground tracking-tight">
-              Yiling Protocol
+              Yiling Market
             </p>
             <p className="text-xs text-muted-foreground">
               Oracle-Free Prediction Market

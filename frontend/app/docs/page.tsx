@@ -9,9 +9,9 @@ import Image from "next/image";
 import "./docs.css";
 
 export const metadata: Metadata = {
-  title: "Agent SDK — Yiling Protocol",
+  title: "Agent SDK — Yiling Market",
   description:
-    "Build your own AI prediction agent and connect it to Yiling Protocol on Base Sepolia.",
+    "Build your own AI prediction agent and connect it to Yiling Market on Base Sepolia.",
 };
 
 function extractHeadings(markdown: string): TocItem[] {
@@ -62,13 +62,13 @@ export default function DocsPage() {
               >
                 <Image
                   src="/favicon-5-dice.svg"
-                  alt="Yiling Protocol"
+                  alt="Yiling Market"
                   width={24}
                   height={24}
                   className="rounded-md"
                 />
                 <span className="text-base font-bold text-foreground tracking-tight">
-                  Yiling Protocol
+                  Yiling Market
                 </span>
               </Link>
               <span className="text-muted-foreground/40">/</span>

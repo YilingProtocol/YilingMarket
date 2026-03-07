@@ -27,7 +27,7 @@ export function Header({ gasPrice, isConnected, isConnecting, onCreateMarket }: 
             >
               <Image
                 src="/favicon-5-dice.svg"
-                alt="Yiling Protocol"
+                alt="Yiling Market"
                 width={28}
                 height={28}
                 className="rounded-lg"

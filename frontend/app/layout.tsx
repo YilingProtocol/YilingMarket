@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/layout/Providers";
 
 export const metadata: Metadata = {
-  title: "Yiling Protocol — Oracle-Free Prediction Market",
+  title: "Yiling Market — Oracle-Free Prediction Market",
   description: "Oracle-Free Self-Resolving Prediction Market powered by AI Agents",
   icons: {
     icon: "/favicon-5-dice.svg",
