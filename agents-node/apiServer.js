@@ -47,13 +47,17 @@ export function startApiServer(port = 8000) {
       const markets = [];
       for (let i = 0; i < count; i++) {
         try {
-          const info = await _marketClient.getMarketInfo(i);
+          const [info, active] = await Promise.all([
+            _marketClient.getMarketInfo(i),
+            _marketClient.isMarketActive(i),
+          ]);
           markets.push({
             market_id: i,
             question: info.question,
             creator: info.creator,
             current_price: Number(info.currentPrice) / 1e18,
             resolved: info.resolved,
+            is_active: active,
             prediction_count: info.predictionCount,
             total_pool: Number(info.totalPool) / 1e18,
           });
