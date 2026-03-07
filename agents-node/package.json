@@ -1,0 +1,19 @@
+{
+  "name": "yiling-protocol-agents",
+  "version": "1.0.0",
+  "description": "Yiling Protocol AI Agent System - Base Sepolia",
+  "type": "module",
+  "scripts": {
+    "start": "node run.js --mode orchestrate",
+    "watch": "node run.js --mode watch",
+    "orchestrate": "node run.js --mode orchestrate"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.4",
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "openai": "^4.77.0",
+    "ws": "^8.18.0"
+  }
+}

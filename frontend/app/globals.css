@@ -1,0 +1,291 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Light Mode ─── */
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #f8fafc;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #3b82f6;
+  --chart-1: #10b981;
+  --chart-2: #3b82f6;
+  --chart-3: #a855f7;
+  --chart-4: #f59e0b;
+  --chart-5: #ec4899;
+  --radius: 0.5rem;
+  --scrollbar-thumb: #c1c5cd;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #3b82f6;
+}
+
+/* ─── Dark Mode (Primary Focus) ─── */
+.dark {
+  --background: #08090d;
+  --foreground: #e4e8ef;
+  --card: #111318;
+  --card-foreground: #e4e8ef;
+  --popover: #111318;
+  --popover-foreground: #e4e8ef;
+  --primary: #3b82f6;
+  --primary-foreground: #e4e8ef;
+  --secondary: #191b22;
+  --secondary-foreground: #e4e8ef;
+  --muted: #191b22;
+  --muted-foreground: #6b7280;
+  --accent: #10b981;
+  --accent-foreground: #e4e8ef;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #1f2231;
+  --input: #1f2231;
+  --ring: #3b82f6;
+  --chart-1: #10b981;
+  --chart-2: #3b82f6;
+  --chart-3: #a855f7;
+  --chart-4: #f59e0b;
+  --chart-5: #ec4899;
+  --scrollbar-thumb: #2a2d3a;
+  --sidebar: #111318;
+  --sidebar-foreground: #e4e8ef;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #e4e8ef;
+  --sidebar-accent: #191b22;
+  --sidebar-accent-foreground: #e4e8ef;
+  --sidebar-border: #1f2231;
+  --sidebar-ring: #3b82f6;
+}
+
+@theme inline {
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* shadcn semantic colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Semantic color tokens */
+  --color-bg: var(--background);
+  --color-surface: var(--card);
+  --color-surface2: var(--secondary);
+  --color-surface3: var(--muted);
+  --color-glass-border: var(--border);
+  --color-glass-border-bright: var(--border);
+  --color-cyan: #3b82f6;
+  --color-cyan-dim: rgba(59, 130, 246, 0.08);
+  --color-cyan-glow: rgba(59, 130, 246, 0.15);
+  --color-cyan-bright: #60a5fa;
+  --color-green: #10b981;
+  --color-green-dim: rgba(16, 185, 129, 0.1);
+  --color-red: #ef4444;
+  --color-red-dim: rgba(239, 68, 68, 0.1);
+  --color-yellow: #f59e0b;
+  --color-text: var(--muted-foreground);
+  --color-text-bright: var(--foreground);
+  --color-text-dim: var(--muted-foreground);
+  --color-primary-light: rgba(59, 130, 246, 0.08);
+  --color-primary-border: rgba(59, 130, 246, 0.2);
+
+  /* Glow tokens for dark mode effects */
+  --color-glow-primary: rgba(59, 130, 246, 0.12);
+  --color-glow-accent: rgba(16, 185, 129, 0.12);
+  --color-glow-destructive: rgba(239, 68, 68, 0.12);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Typography: balanced headings with Jakarta Sans, pretty body text */
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+    font-family: var(--font-heading);
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* ─── Theme Transition (toggle only, not on load) ─── */
+html.transitioning,
+html.transitioning *,
+html.transitioning *::before,
+html.transitioning *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease !important;
+}
+
+/* ─── Animations (compositor-only: transform + opacity) ─── */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.4); }
+}
+
+.animate-fadeSlide  { animation: fadeSlide 0.4s ease-out both; }
+.animate-fadeIn     { animation: fadeIn 0.35s ease-out both; }
+.animate-fadeUp     { animation: fadeUp 0.4s ease-out both; }
+.animate-scaleIn    { animation: scaleIn 0.3s ease-out both; }
+.animate-livePulse  { animation: livePulse 2s ease-in-out infinite; }
+
+/* Stagger delays for entrance sequences */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.4s; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeSlide,
+  .animate-fadeIn,
+  .animate-fadeUp,
+  .animate-scaleIn,
+  .animate-livePulse {
+    animation: none !important;
+  }
+}
+
+/* ─── Utility: tabular numbers for data ─── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Mobile: min touch targets ─── */
+@media (pointer: coarse) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  /* Exception: inline links and small badges */
+  a:not([class*="flex"]):not([class*="inline-flex"]),
+  [class*="badge"] {
+    min-height: auto;
+    min-width: auto;
+  }
+}
+
+/* ─── Mobile: readable base font size ─── */
+@media (max-width: 640px) {
+  body {
+    font-size: 15px;
+  }
+}
+
+/* ─── Safe area inset for fixed elements ─── */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
