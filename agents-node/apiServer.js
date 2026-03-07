@@ -117,16 +117,46 @@ export function startApiServer(port = 8000) {
     }
   });
 
-  app.get("/api/leaderboard", (req, res) => {
-    if (!_orchestrator) return res.json({ rankings: [] });
-    const sorted = Object.entries(_orchestrator.leaderboard).sort((a, b) => b[1] - a[1]);
-    res.json({
-      rankings: sorted.map(([name, mon], i) => ({
-        rank: i + 1,
-        agent: name,
-        total_eth: Math.round(mon * 1e6) / 1e6,
-      })),
-    });
+  app.get("/api/leaderboard", async (req, res) => {
+    if (!_marketClient) return res.json({ rankings: [] });
+    try {
+      const nameMap = getAgentNameMap(); // { address_lower: name }
+      const agentAddresses = Object.keys(nameMap);
+      if (!agentAddresses.length) return res.json({ rankings: [] });
+
+      const marketCount = await _marketClient.getMarketCount();
+      const totals = {}; // address -> total ETH earned
+      for (const addr of agentAddresses) {
+        totals[addr] = 0;
+      }
+
+      for (let i = 0; i < marketCount; i++) {
+        const info = await _marketClient.getMarketInfo(i);
+        if (!info.resolved) continue;
+
+        await Promise.all(agentAddresses.map(async (addr) => {
+          try {
+            const predicted = await _marketClient.hasPredicted(i, addr);
+            if (!predicted) return;
+            const payout = await _marketClient.getPayout(i, addr);
+            const params = await _marketClient.getMarketParams(i);
+            const net = Number(payout) / 1e18 - Number(params.bondAmount) / 1e18;
+            totals[addr] += net;
+          } catch {}
+        }));
+      }
+
+      const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+      res.json({
+        rankings: sorted.map(([addr, eth], i) => ({
+          rank: i + 1,
+          agent: nameMap[addr] || addr,
+          total_eth: Math.round(eth * 1e6) / 1e6,
+        })),
+      });
+    } catch (e) {
+      res.status(500).json({ detail: e.message });
+    }
   });
 
   app.get("/api/agent-names", (req, res) => {
