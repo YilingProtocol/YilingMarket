@@ -39,7 +39,7 @@ export function useMarketList() {
         creator: m.creator || "",
       }));
 
-      const filtered = items.filter((m: MarketListItem) => !HIDDEN_MARKET_IDS.has(m.id));
+      const filtered = items.filter((m: MarketListItem) => !HIDDEN_MARKET_IDS.has(m.id)).reverse();
       marketsRef.current = filtered;
       setMarkets(filtered);
       setError(null);
