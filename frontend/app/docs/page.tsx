@@ -61,7 +61,7 @@ export default function DocsPage() {
                 className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
               >
                 <Image
-                  src="/favicon-5-dice.svg"
+                  src="/logo.svg"
                   alt="Yiling Market"
                   width={24}
                   height={24}

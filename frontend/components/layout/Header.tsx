@@ -26,7 +26,7 @@ export function Header({ gasPrice, isConnected, isConnecting, onCreateMarket }: 
               className="flex items-center gap-2.5 transition-opacity hover:opacity-80 cursor-pointer"
             >
               <Image
-                src="/favicon-5-dice.svg"
+                src="/logo.svg"
                 alt="Yiling Market"
                 width={28}
                 height={28}

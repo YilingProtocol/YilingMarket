@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="8" fill="#ea580c"/>
+  <g transform="translate(4 4)" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Back die -->
+    <rect x="10" y="2" width="12" height="12" rx="2.5"/>
+    <circle cx="14" cy="6" r="0.8" fill="#fff" stroke="none"/>
+    <circle cx="18" cy="10" r="0.8" fill="#fff" stroke="none"/>
+    <!-- Front die -->
+    <rect x="2" y="10" width="12" height="12" rx="2.5"/>
+    <circle cx="6" cy="14" r="0.8" fill="#fff" stroke="none"/>
+    <circle cx="10" cy="14" r="0.8" fill="#fff" stroke="none"/>
+    <circle cx="6" cy="18" r="0.8" fill="#fff" stroke="none"/>
+    <circle cx="10" cy="18" r="0.8" fill="#fff" stroke="none"/>
+  </g>
+</svg>
