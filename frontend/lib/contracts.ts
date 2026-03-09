@@ -1,7 +1,60 @@
-export const CONTRACT_ADDRESS = "0x100647AC385271d5f955107c5C18360B3029311c" as const;
-export const CHAIN_ID = 84532;
-export const RPC_URL = "https://sepolia.base.org";
-export const EXPLORER_URL = "https://sepolia.basescan.org";
+export type ChainKey = "base" | "monad";
+
+export interface ChainConfig {
+  key: ChainKey;
+  name: string;
+  chainId: number;
+  rpcUrl: string;
+  explorerUrl: string;
+  contractAddress: `0x${string}`;
+  nativeCurrency: { name: string; symbol: string; decimals: number };
+  testnet: boolean;
+  color: string;
+  apiUrl: string;
+  wsUrl: string;
+}
+
+export const CHAINS: Record<ChainKey, ChainConfig> = {
+  base: {
+    key: "base",
+    name: "Base Sepolia",
+    chainId: 84532,
+    rpcUrl: "https://sepolia.base.org",
+    explorerUrl: "https://sepolia.basescan.org",
+    contractAddress: "0x100647AC385271d5f955107c5C18360B3029311c",
+    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+    testnet: true,
+    color: "#0052FF",
+    apiUrl: process.env.NEXT_PUBLIC_BASE_API_URL || process.env.NEXT_PUBLIC_API_URL || "",
+    wsUrl: process.env.NEXT_PUBLIC_BASE_WS_URL || process.env.NEXT_PUBLIC_WS_URL || "",
+  },
+  monad: {
+    key: "monad",
+    name: "Monad Testnet",
+    chainId: 10143,
+    rpcUrl: "https://testnet-rpc.monad.xyz",
+    explorerUrl: "https://testnet.monadexplorer.com",
+    contractAddress: "0xDb44158019a88FEC76E1aBC1F9fE80c6C87DAD65",
+    nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
+    testnet: true,
+    color: "#836EF9",
+    apiUrl: process.env.NEXT_PUBLIC_MONAD_API_URL || "",
+    wsUrl: process.env.NEXT_PUBLIC_MONAD_WS_URL || "",
+  },
+};
+
+export const DEFAULT_CHAIN: ChainKey = "base";
+
+// Helper to get chain config by chainId
+export function getChainByChainId(chainId: number): ChainConfig | undefined {
+  return Object.values(CHAINS).find((c) => c.chainId === chainId);
+}
+
+// Legacy exports for backward compatibility
+export const CONTRACT_ADDRESS = CHAINS.base.contractAddress;
+export const CHAIN_ID = CHAINS.base.chainId;
+export const RPC_URL = CHAINS.base.rpcUrl;
+export const EXPLORER_URL = CHAINS.base.explorerUrl;
 export const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "";
 
 export const CONTRACT_ABI = [

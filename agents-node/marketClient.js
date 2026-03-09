@@ -1,6 +1,91 @@
 import { ethers } from "ethers";
 import { loadABI, WAD } from "./config.js";
 
+// Read-only client that doesn't need a private key
+export class ReadOnlyMarketClient {
+  constructor(rpcUrl, contractAddress) {
+    this.provider = new ethers.JsonRpcProvider(rpcUrl);
+    const abi = loadABI();
+    this.readContract = new ethers.Contract(contractAddress, abi, this.provider);
+  }
+
+  async getMarketInfo(marketId) {
+    const result = await this.readContract.getMarketInfo(marketId);
+    return {
+      question: result[0],
+      currentPrice: result[1],
+      creator: result[2],
+      resolved: result[3],
+      totalPool: result[4],
+      predictionCount: Number(result[5]),
+    };
+  }
+
+  async getMarketParams(marketId) {
+    const result = await this.readContract.getMarketParams(marketId);
+    return {
+      alpha: result[0],
+      k: Number(result[1]),
+      flatReward: result[2],
+      bondAmount: result[3],
+      liquidityParam: result[4],
+      createdAt: Number(result[5]),
+    };
+  }
+
+  async getProtocolConfig() {
+    const result = await this.readContract.getProtocolConfig();
+    return {
+      owner: result[0],
+      treasury: result[1],
+      protocolFeeBps: Number(result[2]),
+    };
+  }
+
+  async getPrediction(marketId, index) {
+    const result = await this.readContract.getPrediction(marketId, index);
+    return {
+      predictor: result[0],
+      probability: result[1],
+      priceBefore: result[2],
+      priceAfter: result[3],
+      bond: result[4],
+      timestamp: Number(result[5]),
+    };
+  }
+
+  async getPredictions(marketId) {
+    const count = await this.getPredictionCount(marketId);
+    const predictions = [];
+    for (let i = 0; i < count; i++) {
+      predictions.push(await this.getPrediction(marketId, i));
+    }
+    return predictions;
+  }
+
+  async getPredictionCount(marketId) {
+    const count = await this.readContract.getPredictionCount(marketId);
+    return Number(count);
+  }
+
+  async getMarketCount() {
+    const count = await this.readContract.getMarketCount();
+    return Number(count);
+  }
+
+  async isMarketActive(marketId) {
+    return await this.readContract.isMarketActive(marketId);
+  }
+
+  async hasPredicted(marketId, address) {
+    return await this.readContract.hasPredicted(marketId, address);
+  }
+
+  async getPayout(marketId, address) {
+    return await this.readContract.getPayoutAmount(marketId, address);
+  }
+}
+
 export class MarketClient {
   constructor(rpcUrl, contractAddress, privateKey) {
     this.provider = new ethers.JsonRpcProvider(rpcUrl);

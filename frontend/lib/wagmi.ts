@@ -1,26 +1,40 @@
 import { http, createConfig } from "wagmi";
 import { defineChain } from "viem";
 import { injected } from "wagmi/connectors";
-import { RPC_URL, CHAIN_ID, EXPLORER_URL } from "./contracts";
+import { CHAINS } from "./contracts";
 
 export const baseSepolia = defineChain({
-  id: CHAIN_ID,
-  name: "Base Sepolia",
-  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  id: CHAINS.base.chainId,
+  name: CHAINS.base.name,
+  nativeCurrency: CHAINS.base.nativeCurrency,
   rpcUrls: {
-    default: { http: [RPC_URL] },
+    default: { http: [CHAINS.base.rpcUrl] },
   },
   blockExplorers: {
-    default: { name: "BaseScan", url: EXPLORER_URL },
+    default: { name: "BaseScan", url: CHAINS.base.explorerUrl },
+  },
+  testnet: true,
+});
+
+export const monadTestnet = defineChain({
+  id: CHAINS.monad.chainId,
+  name: CHAINS.monad.name,
+  nativeCurrency: CHAINS.monad.nativeCurrency,
+  rpcUrls: {
+    default: { http: [CHAINS.monad.rpcUrl] },
+  },
+  blockExplorers: {
+    default: { name: "Monad Explorer", url: CHAINS.monad.explorerUrl },
   },
   testnet: true,
 });
 
 export const config = createConfig({
-  chains: [baseSepolia],
+  chains: [baseSepolia, monadTestnet],
   connectors: [injected()],
   transports: {
-    [baseSepolia.id]: http(RPC_URL),
+    [baseSepolia.id]: http(CHAINS.base.rpcUrl),
+    [monadTestnet.id]: http(CHAINS.monad.rpcUrl),
   },
   ssr: true,
   multiInjectedProviderDiscovery: false,

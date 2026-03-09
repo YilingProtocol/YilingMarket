@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Bot, Trophy } from "lucide-react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+import { useChain } from "@/lib/chainContext";
 
 interface AgentEntry {
   name: string;
@@ -22,11 +21,12 @@ const RANK_COLORS = [
 export function TopAgents() {
   const [agents, setAgents] = useState<AgentEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { chainConfig } = useChain();
 
   useEffect(() => {
     async function fetchLeaderboard() {
       try {
-        const res = await fetch(`${API_URL}/api/leaderboard`);
+        const res = await fetch(`${chainConfig.apiUrl}/api/leaderboard`);
         if (!res.ok) throw new Error("Failed to fetch leaderboard");
         const data = await res.json();
 
@@ -50,7 +50,7 @@ export function TopAgents() {
     fetchLeaderboard();
     const interval = setInterval(fetchLeaderboard, 30_000);
     return () => clearInterval(interval);
-  }, []);
+  }, [chainConfig.apiUrl]);
 
   if (isLoading) {
     return (

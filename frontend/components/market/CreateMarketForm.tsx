@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther } from "viem";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "@/lib/contracts";
-import { baseSepolia } from "@/lib/wagmi";
+import { CONTRACT_ABI } from "@/lib/contracts";
+import { useChain } from "@/lib/chainContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { ChevronDown, ChevronUp, Lock, Loader2, AlertTriangle } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+// validate-question goes to the active chain's backend
 
 interface CreateMarketFormProps {
   onClose?: () => void;
@@ -21,6 +21,7 @@ interface CreateMarketFormProps {
 
 export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarketFormProps) {
   const { isConnected } = useAccount();
+  const { chainConfig } = useChain();
   const [isOpen, setIsOpen] = useState(alwaysOpen ?? false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [question, setQuestion] = useState("");
@@ -49,7 +50,7 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
     setIsValidating(true);
     setValidationError("");
     try {
-      const res = await fetch(`${API_URL}/api/validate-question`, {
+      const res = await fetch(`${chainConfig.apiUrl}/api/validate-question`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: question.trim() }),
@@ -73,12 +74,12 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
     const funding = flatReward * BigInt(k) + liquidityParam;
 
     writeContract({
-      address: CONTRACT_ADDRESS,
+      address: chainConfig.contractAddress,
       abi: CONTRACT_ABI,
       functionName: "createMarket",
       args: [question, alphaWad, BigInt(k), flatReward, bondAmount, liquidityParam, initialPrice],
       value: funding,
-      chain: baseSepolia,
+      chainId: chainConfig.chainId,
     });
   };
 
@@ -166,7 +167,7 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
             Estimated Cost
           </span>
           <span className="text-2xl font-bold font-mono text-primary tabular-nums">
-            ~{cost.toFixed(4)} ETH
+            ~{cost.toFixed(4)} {chainConfig.nativeCurrency.symbol}
           </span>
         </div>
         <p className="text-xs text-muted-foreground">

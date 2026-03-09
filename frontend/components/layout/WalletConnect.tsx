@@ -1,7 +1,7 @@
 "use client";
 
 import { useAccount, useConnect, useDisconnect, useBalance, useSwitchChain, useChainId } from "wagmi";
-import { baseSepolia } from "@/lib/wagmi";
+import { useChain } from "@/lib/chainContext";
 import { Button } from "@/components/ui/button";
 import { Wallet, AlertTriangle } from "lucide-react";
 
@@ -10,19 +10,20 @@ export function WalletConnect() {
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
-  const chainId = useChainId();
-  const { data: balance } = useBalance({ address, chainId: baseSepolia.id });
-  const isWrongNetwork = isConnected && chainId !== baseSepolia.id;
+  const walletChainId = useChainId();
+  const { chainConfig } = useChain();
+  const { data: balance } = useBalance({ address, chainId: chainConfig.chainId });
+  const isWrongNetwork = isConnected && walletChainId !== chainConfig.chainId;
 
   if (isWrongNetwork) {
     return (
       <Button
         variant="outline"
         className="gap-2 cursor-pointer border-destructive/50 text-destructive hover:bg-destructive/10"
-        onClick={() => switchChain({ chainId: baseSepolia.id })}
+        onClick={() => switchChain({ chainId: chainConfig.chainId })}
       >
         <AlertTriangle className="size-4" />
-        Switch to Base Sepolia
+        Switch to {chainConfig.name}
       </Button>
     );
   }
@@ -39,7 +40,7 @@ export function WalletConnect() {
           <span className="hidden sm:inline">{short}</span>
           <span className="sm:hidden">{address.slice(0, 4)}...{address.slice(-2)}</span>
           <span className="mx-1.5 text-border">|</span>
-          <span>{bal} ETH</span>
+          <span>{bal} {chainConfig.nativeCurrency.symbol}</span>
         </Button>
         <Button
           variant="ghost"
@@ -59,7 +60,7 @@ export function WalletConnect() {
       className="gap-2 cursor-pointer"
       onClick={() => {
         const connector = connectors[0];
-        if (connector) connect({ connector, chainId: baseSepolia.id });
+        if (connector) connect({ connector, chainId: chainConfig.chainId });
       }}
     >
       <Wallet className="size-4" />

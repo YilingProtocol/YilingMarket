@@ -1,17 +1,21 @@
 "use client";
 
 import { useReadContract } from "wagmi";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "@/lib/contracts";
+import { CONTRACT_ABI } from "@/lib/contracts";
+import { useChain } from "@/lib/chainContext";
 
 export function useMarketDetail(marketId: number) {
+  const { chainConfig } = useChain();
+
   const {
     data: marketInfo,
     isLoading: isInfoLoading,
   } = useReadContract({
-    address: CONTRACT_ADDRESS,
+    address: chainConfig.contractAddress,
     abi: CONTRACT_ABI,
     functionName: "getMarketInfo",
     args: [BigInt(marketId)],
+    chainId: chainConfig.chainId,
     query: { refetchInterval: 30_000 },
   });
 
@@ -19,10 +23,11 @@ export function useMarketDetail(marketId: number) {
     data: params,
     isLoading: isParamsLoading,
   } = useReadContract({
-    address: CONTRACT_ADDRESS,
+    address: chainConfig.contractAddress,
     abi: CONTRACT_ABI,
     functionName: "getMarketParams",
     args: [BigInt(marketId)],
+    chainId: chainConfig.chainId,
     query: { refetchInterval: 30_000 },
   });
 
@@ -30,10 +35,11 @@ export function useMarketDetail(marketId: number) {
     data: isActive,
     isLoading: isActiveLoading,
   } = useReadContract({
-    address: CONTRACT_ADDRESS,
+    address: chainConfig.contractAddress,
     abi: CONTRACT_ABI,
     functionName: "isMarketActive",
     args: [BigInt(marketId)],
+    chainId: chainConfig.chainId,
     query: { refetchInterval: 30_000 },
   });
 

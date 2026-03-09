@@ -2,11 +2,33 @@ import express from "express";
 import cors from "cors";
 import OpenAI from "openai";
 import { AGENT_PROFILES } from "./profiles.js";
-import { AGENT_KEYS, OPENAI_API_KEY } from "./config.js";
+import { AGENT_KEYS, OPENAI_API_KEY, CHAINS } from "./config.js";
+import { ReadOnlyMarketClient } from "./marketClient.js";
 import { ethers } from "ethers";
 
-let _marketClient = null;
+let _marketClient = null; // default (base) client for orchestrator
 let _orchestrator = null;
+
+// Read-only clients per chain (lazy initialized)
+const _chainClients = {};
+
+function getChainClient(chainKey) {
+  // If it's the default chain and we have the orchestrator's client, use that
+  if (chainKey === "base" && _marketClient) return _marketClient;
+
+  if (!_chainClients[chainKey]) {
+    const cfg = CHAINS[chainKey];
+    if (!cfg || !cfg.contractAddress) return null;
+    _chainClients[chainKey] = new ReadOnlyMarketClient(cfg.rpcUrl, cfg.contractAddress);
+  }
+  return _chainClients[chainKey];
+}
+
+function resolveClient(req) {
+  const chain = req.query.chain || "base";
+  const client = getChainClient(chain);
+  return { client, chain };
+}
 
 export function setSharedState(marketClient, orchestrator) {
   _marketClient = marketClient;
@@ -32,14 +54,18 @@ export function startApiServer(port = 8000) {
   app.use(cors());
   app.use(express.json());
 
+  // Initialize monad client eagerly so it's ready
+  getChainClient("monad");
+
   app.get("/api/stats", async (req, res) => {
-    if (!_marketClient) return res.json({ total_agents: 0, total_markets: 0 });
+    const { client } = resolveClient(req);
+    if (!client) return res.json({ total_agents: 0, total_markets: 0 });
     try {
-      const marketCount = await _marketClient.getMarketCount();
+      const marketCount = await client.getMarketCount();
       const uniqueAddresses = new Set();
       for (let i = 0; i < marketCount; i++) {
         try {
-          const predictions = await _marketClient.getPredictions(i);
+          const predictions = await client.getPredictions(i);
           for (const p of predictions) {
             uniqueAddresses.add(p.predictor.toLowerCase());
           }
@@ -57,19 +83,33 @@ export function startApiServer(port = 8000) {
       mode: _orchestrator ? "orchestrate" : "standalone",
       market_client: !!_marketClient,
       orchestrator: !!_orchestrator,
+      chains: Object.keys(CHAINS),
     });
   });
 
+  app.get("/api/chains", (req, res) => {
+    res.json(
+      Object.entries(CHAINS).map(([key, cfg]) => ({
+        key,
+        name: cfg.name,
+        chainId: cfg.chainId,
+        symbol: cfg.symbol,
+        active: !!cfg.contractAddress,
+      }))
+    );
+  });
+
   app.get("/api/markets", async (req, res) => {
-    if (!_marketClient) return res.status(503).json({ detail: "Not initialized" });
+    const { client } = resolveClient(req);
+    if (!client) return res.status(503).json({ detail: "Chain not initialized" });
     try {
-      const count = await _marketClient.getMarketCount();
+      const count = await client.getMarketCount();
       const markets = [];
       for (let i = 0; i < count; i++) {
         try {
           const [info, active] = await Promise.all([
-            _marketClient.getMarketInfo(i),
-            _marketClient.isMarketActive(i),
+            client.getMarketInfo(i),
+            client.isMarketActive(i),
           ]);
           markets.push({
             market_id: i,
@@ -90,9 +130,10 @@ export function startApiServer(port = 8000) {
   });
 
   app.get("/api/markets/count", async (req, res) => {
-    if (!_marketClient) return res.status(503).json({ detail: "Not initialized" });
+    const { client } = resolveClient(req);
+    if (!client) return res.status(503).json({ detail: "Chain not initialized" });
     try {
-      const count = await _marketClient.getMarketCount();
+      const count = await client.getMarketCount();
       res.json({ count });
     } catch (e) {
       res.status(500).json({ detail: e.message });
@@ -100,12 +141,13 @@ export function startApiServer(port = 8000) {
   });
 
   app.get("/api/markets/:id", async (req, res) => {
-    if (!_marketClient) return res.status(503).json({ detail: "Not initialized" });
+    const { client } = resolveClient(req);
+    if (!client) return res.status(503).json({ detail: "Chain not initialized" });
     const marketId = parseInt(req.params.id);
     try {
-      const info = await _marketClient.getMarketInfo(marketId);
-      const params = await _marketClient.getMarketParams(marketId);
-      const predictions = await _marketClient.getPredictions(marketId);
+      const info = await client.getMarketInfo(marketId);
+      const params = await client.getMarketParams(marketId);
+      const predictions = await client.getPredictions(marketId);
       res.json({
         market_id: marketId,
         question: info.question,
@@ -138,28 +180,29 @@ export function startApiServer(port = 8000) {
   });
 
   app.get("/api/leaderboard", async (req, res) => {
-    if (!_marketClient) return res.json({ rankings: [] });
+    const { client } = resolveClient(req);
+    if (!client) return res.json({ rankings: [] });
     try {
-      const nameMap = getAgentNameMap(); // { address_lower: name }
+      const nameMap = getAgentNameMap();
       const agentAddresses = Object.keys(nameMap);
       if (!agentAddresses.length) return res.json({ rankings: [] });
 
-      const marketCount = await _marketClient.getMarketCount();
-      const totals = {}; // address -> total ETH earned
+      const marketCount = await client.getMarketCount();
+      const totals = {};
       for (const addr of agentAddresses) {
         totals[addr] = 0;
       }
 
       for (let i = 0; i < marketCount; i++) {
-        const info = await _marketClient.getMarketInfo(i);
+        const info = await client.getMarketInfo(i);
         if (!info.resolved) continue;
 
         await Promise.all(agentAddresses.map(async (addr) => {
           try {
-            const predicted = await _marketClient.hasPredicted(i, addr);
+            const predicted = await client.hasPredicted(i, addr);
             if (!predicted) return;
-            const payout = await _marketClient.getPayout(i, addr);
-            const params = await _marketClient.getMarketParams(i);
+            const payout = await client.getPayout(i, addr);
+            const params = await client.getMarketParams(i);
             const net = Number(payout) / 1e18 - Number(params.bondAmount) / 1e18;
             totals[addr] += net;
           } catch {}
@@ -180,21 +223,22 @@ export function startApiServer(port = 8000) {
   });
 
   app.get("/api/markets/:id/leaderboard", async (req, res) => {
-    if (!_marketClient) return res.json({ rankings: [] });
+    const { client } = resolveClient(req);
+    if (!client) return res.json({ rankings: [] });
     const marketId = parseInt(req.params.id);
     try {
-      const info = await _marketClient.getMarketInfo(marketId);
+      const info = await client.getMarketInfo(marketId);
       if (!info.resolved) return res.json({ rankings: [] });
 
       const nameMap = getAgentNameMap();
-      const predictions = await _marketClient.getPredictions(marketId);
-      const params = await _marketClient.getMarketParams(marketId);
+      const predictions = await client.getPredictions(marketId);
+      const params = await client.getMarketParams(marketId);
       const bondAmt = Number(params.bondAmount) / 1e18;
 
       const rankings = await Promise.all(predictions.map(async (p, i) => {
         const addr = p.predictor.toLowerCase();
         try {
-          const payout = await _marketClient.getPayout(marketId, p.predictor);
+          const payout = await client.getPayout(marketId, p.predictor);
           const net = Number(payout) / 1e18 - bondAmt;
           return {
             rank: 0,
@@ -255,7 +299,6 @@ Respond in JSON: {"valid": true/false, "reason": "brief explanation in English"}
       const result = JSON.parse(response.choices[0].message.content);
       res.json({ valid: !!result.valid, reason: result.reason || "" });
     } catch (e) {
-      // On LLM failure, allow the question (don't block users)
       console.error(`[Validate] LLM error: ${e.message}`);
       res.json({ valid: true, reason: "Validation unavailable, proceeding." });
     }
@@ -266,9 +309,10 @@ Respond in JSON: {"valid": true/false, "reason": "brief explanation in English"}
   });
 
   app.get("/api/protocol", async (req, res) => {
-    if (!_marketClient) return res.status(503).json({ detail: "Not initialized" });
+    const { client } = resolveClient(req);
+    if (!client) return res.status(503).json({ detail: "Chain not initialized" });
     try {
-      const config = await _marketClient.getProtocolConfig();
+      const config = await client.getProtocolConfig();
       res.json({
         owner: config.owner,
         treasury: config.treasury,
@@ -282,7 +326,8 @@ Respond in JSON: {"valid": true/false, "reason": "brief explanation in English"}
 
   const server = app.listen(port, "0.0.0.0", () => {
     console.log(`[API] REST server running on http://0.0.0.0:${port}`);
-    console.log(`[API] Docs: http://localhost:${port}/api/health`);
+    console.log(`[API] Supported chains: ${Object.keys(CHAINS).join(", ")}`);
+    console.log(`[API] Usage: /api/markets?chain=base or /api/markets?chain=monad`);
   });
 
   return server;

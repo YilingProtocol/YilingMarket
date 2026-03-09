@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+import { useChain } from "@/lib/chainContext";
 
 const LightPillar = dynamic(() => import("@/components/LightPillar"), {
   ssr: false,
@@ -16,11 +16,12 @@ const TextType = dynamic(() => import("@/components/TextType"), {
 });
 
 export default function LandingPage() {
+  const { chainConfig } = useChain();
   const [agentCount, setAgentCount] = useState(7);
   const [marketCount, setMarketCount] = useState(0);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/stats`)
+    fetch(`${chainConfig.apiUrl}/api/stats`)
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (data) {
@@ -29,7 +30,7 @@ export default function LandingPage() {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [chainConfig.apiUrl]);
 
   return (
     <div className="relative w-full h-dvh overflow-hidden bg-[#0c0a09]">

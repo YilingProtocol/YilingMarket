@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { WalletConnect } from "./WalletConnect";
+import { ChainSwitcher } from "./ChainSwitcher";
 import { BookOpen, ExternalLink, Plus } from "lucide-react";
 
 interface HeaderProps {
@@ -64,6 +65,7 @@ export function Header({ gasPrice, isConnected, isConnecting, onCreateMarket }: 
 
           {/* Right: Actions */}
           <div className="flex items-center gap-3">
+            <ChainSwitcher />
             <ThemeToggle />
             {onCreateMarket && (
               <Button

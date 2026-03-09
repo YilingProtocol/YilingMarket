@@ -11,6 +11,24 @@ export const RPC_URL = process.env.RPC_URL || "https://sepolia.base.org";
 export const CHAIN_ID = 84532;
 export const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || "";
 
+// Multi-chain config
+export const CHAINS = {
+  base: {
+    rpcUrl: process.env.RPC_URL || "https://sepolia.base.org",
+    contractAddress: process.env.CONTRACT_ADDRESS || "",
+    chainId: 84532,
+    name: "Base Sepolia",
+    symbol: "ETH",
+  },
+  monad: {
+    rpcUrl: process.env.MONAD_RPC_URL || "https://testnet-rpc.monad.xyz",
+    contractAddress: process.env.MONAD_CONTRACT_ADDRESS || "0xDb44158019a88FEC76E1aBC1F9fE80c6C87DAD65",
+    chainId: 10143,
+    name: "Monad Testnet",
+    symbol: "MON",
+  },
+};
+
 export const AGENT_KEYS = Array.from({ length: 7 }, (_, i) =>
   process.env[`AGENT_KEY_${i + 1}`] || ""
 );

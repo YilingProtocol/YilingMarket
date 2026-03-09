@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useChain } from "@/lib/chainContext";
 
 interface Prediction {
   index: number;
@@ -39,9 +40,10 @@ export function useMarketHistory(marketId: number) {
   const [agentNames, setAgentNames] = useState<AgentNames>({});
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { chainConfig } = useChain();
 
   useEffect(() => {
-    const API = process.env.NEXT_PUBLIC_API_URL || "";
+    const API = chainConfig.apiUrl;
 
     Promise.all([
       fetch(`${API}/api/markets/${marketId}`).then((r) => r.ok ? r.json() : null),
@@ -59,7 +61,7 @@ export function useMarketHistory(marketId: number) {
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
-  }, [marketId]);
+  }, [marketId, chainConfig.apiUrl]);
 
   const getAgentName = (address: string): string => {
     return agentNames[address.toLowerCase()] || `${address.slice(0, 6)}...${address.slice(-4)}`;

@@ -4,7 +4,7 @@ import { Leaderboard } from "./Leaderboard";
 import { DiceRoll } from "./DiceRoll";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { EXPLORER_URL } from "@/lib/contracts";
+import { useChain } from "@/lib/chainContext";
 import { ExternalLink, ArrowRightLeft } from "lucide-react";
 
 interface TxEntry {
@@ -48,6 +48,7 @@ export function IntelPanel({
   txList,
   params,
 }: IntelPanelProps) {
+  const { chainConfig } = useChain();
   const agents = Object.keys(agentPredictions);
   const maxPred = Math.max(1, ...Object.values(agentPredictions));
 
@@ -162,7 +163,7 @@ export function IntelPanel({
                   </div>
                   {tx.txHash && (
                     <a
-                      href={`${EXPLORER_URL}/tx/0x${tx.txHash}`}
+                      href={`${chainConfig.explorerUrl}/tx/0x${tx.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-xs font-mono text-primary hover:underline shrink-0 cursor-pointer"
