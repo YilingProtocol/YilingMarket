@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ExternalLink } from "lucide-react";
 
 import { CHAINS } from "@/lib/contracts";
@@ -71,9 +72,12 @@ export default function LandingPage() {
 
       {/* Top nav */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-5">
-        <span className="text-white/90 text-lg font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
-          Yiling Market
-        </span>
+        <div className="flex items-center gap-2.5">
+          <Image src="/logo.png" alt="Yiling Market" width={32} height={32} />
+          <span className="text-white/90 text-lg font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
+            Yiling Market
+          </span>
+        </div>
         <a
           href="https://yiling-protocol-landing.vercel.app"
           target="_blank"

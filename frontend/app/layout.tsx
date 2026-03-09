@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Yiling Market — Oracle-Free Prediction Market",
   description: "Oracle-Free Self-Resolving Prediction Market powered by AI Agents",
   icons: {
-    icon: "/logo.svg",
+    icon: "/logo.png",
   },
 };
 
