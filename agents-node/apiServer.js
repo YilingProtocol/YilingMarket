@@ -57,21 +57,21 @@ export function startApiServer(port = 8000) {
   // Initialize monad client eagerly so it's ready
   getChainClient("monad");
 
+  const statsCache = { data: null, ts: 0 };
   app.get("/api/stats", async (req, res) => {
+    const now = Date.now();
+    if (statsCache.data && now - statsCache.ts < 60000) {
+      return res.json(statsCache.data);
+    }
     const { client } = resolveClient(req);
     if (!client) return res.json({ total_agents: 0, total_markets: 0 });
     try {
       const marketCount = await client.getMarketCount();
-      const uniqueAddresses = new Set();
-      for (let i = 0; i < marketCount; i++) {
-        try {
-          const predictions = await client.getPredictions(i);
-          for (const p of predictions) {
-            uniqueAddresses.add(p.predictor.toLowerCase());
-          }
-        } catch {}
-      }
-      res.json({ total_agents: uniqueAddresses.size, total_markets: marketCount });
+      const total_agents = AGENT_PROFILES.length;
+      const result = { total_agents, total_markets: marketCount };
+      statsCache.data = result;
+      statsCache.ts = now;
+      res.json(result);
     } catch (e) {
       res.status(500).json({ detail: e.message });
     }
