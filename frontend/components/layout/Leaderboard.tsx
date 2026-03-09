@@ -1,6 +1,7 @@
 "use client";
 
 import { Trophy } from "lucide-react";
+import { useChain } from "@/lib/chainContext";
 
 interface LeaderboardEntry {
   agent: string;
@@ -12,6 +13,7 @@ const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"];
 const RANK_LABELS = ["1st", "2nd", "3rd"];
 
 export function Leaderboard({ rankings }: { rankings: LeaderboardEntry[] }) {
+  const { chainConfig } = useChain();
   if (rankings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-6 gap-2 text-muted-foreground">
@@ -58,7 +60,7 @@ export function Leaderboard({ rankings }: { rankings: LeaderboardEntry[] }) {
               }`}
             >
               {(r.total_eth ?? r.total_mon ?? 0) >= 0 ? "+" : ""}
-              {(r.total_eth ?? r.total_mon ?? 0).toFixed(4)} ETH
+              {(r.total_eth ?? r.total_mon ?? 0).toFixed(4)} {chainConfig.nativeCurrency.symbol}
             </div>
           </div>
         );

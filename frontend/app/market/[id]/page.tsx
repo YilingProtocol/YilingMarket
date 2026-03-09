@@ -13,6 +13,7 @@ import { AgentPanel } from "@/components/agents/AgentPanel";
 import { IntelPanel } from "@/components/layout/IntelPanel";
 import { formatEther } from "viem";
 import { ArrowLeft } from "lucide-react";
+import { useChain } from "@/lib/chainContext";
 
 /* ─── Loading Skeleton ─── */
 function DetailSkeleton({ marketId }: { marketId: number }) {
@@ -78,6 +79,7 @@ export default function MarketDetailPage() {
   const params = useParams();
   const marketId = Number(params.id);
 
+  const { chainConfig } = useChain();
   const { isConnected: wsConnected, isConnecting: wsConnecting, lastMessage } = useWebSocket();
   const market = useMarket(lastMessage, marketId);
   const { marketInfo, params: chainParams, isActive, isLoading } = useMarketDetail(marketId);
@@ -111,10 +113,10 @@ export default function MarketDetailPage() {
   const displayParams = chainParams
     ? {
         alpha: `${(parseFloat(formatEther(chainParams[0])) * 100).toFixed(0)}%`,
-        b: `${parseFloat(formatEther(chainParams[4])).toFixed(4)} ETH`,
+        b: `${parseFloat(formatEther(chainParams[4])).toFixed(4)} ${chainConfig.nativeCurrency.symbol}`,
         k: chainParams[1].toString(),
         r: `${parseFloat(formatEther(chainParams[2])).toFixed(4)}`,
-        bond: `${parseFloat(formatEther(chainParams[3])).toFixed(4)} ETH`,
+        bond: `${parseFloat(formatEther(chainParams[3])).toFixed(4)} ${chainConfig.nativeCurrency.symbol}`,
         fee: "2%",
       }
     : market.params;

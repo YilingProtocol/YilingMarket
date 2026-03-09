@@ -123,7 +123,7 @@ export function TopAgents() {
             </div>
 
             <span className="text-xs font-mono tabular-nums text-muted-foreground shrink-0">
-              {agent.totalEth.toFixed(4)} ETH
+              {agent.totalEth.toFixed(4)} {chainConfig.nativeCurrency.symbol}
             </span>
           </div>
         ))}

@@ -1,8 +1,8 @@
 import { formatEther } from "viem";
 
-export function formatETH(value: bigint): string {
+export function formatETH(value: bigint, symbol = "ETH"): string {
   const formatted = parseFloat(formatEther(value));
-  return `${formatted.toFixed(2)} ETH`;
+  return `${formatted.toFixed(2)} ${symbol}`;
 }
 
 export function formatProbability(weiPrice: bigint): number {

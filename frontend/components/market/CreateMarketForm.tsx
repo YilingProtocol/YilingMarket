@@ -220,7 +220,7 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
                     className="pr-14"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                    ETH
+                    {chainConfig.nativeCurrency.symbol}
                   </span>
                 </div>
               </div>
@@ -237,7 +237,7 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
                     className="pr-14"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                    ETH
+                    {chainConfig.nativeCurrency.symbol}
                   </span>
                 </div>
               </div>
@@ -256,7 +256,7 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
                   className="pr-14"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                  ETH
+                  {chainConfig.nativeCurrency.symbol}
                 </span>
               </div>
             </div>

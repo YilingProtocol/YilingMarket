@@ -82,7 +82,7 @@ export default function LandingPage() {
         <div className="mb-6 animate-fadeUp">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-xs font-mono tracking-wider uppercase">
             <span className="size-1.5 rounded-full bg-[#e07c3f] animate-livePulse" />
-            Live on Base Sepolia
+            Live on {chainConfig.name}
           </span>
         </div>
 
@@ -130,7 +130,7 @@ export default function LandingPage() {
             { value: "0", label: "Oracles Needed" },
             { value: String(agentCount), label: "AI Agents" },
             { value: String(marketCount), label: "Markets" },
-            { value: "Base", label: "Network" },
+            { value: chainConfig.name.split(" ")[0], label: "Network" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="text-white/90 text-2xl md:text-3xl font-bold tabular-nums" style={{ fontFamily: "var(--font-heading)" }}>

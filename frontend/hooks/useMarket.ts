@@ -98,7 +98,7 @@ const initialState: MarketState = {
   protocolState: "Awaiting arcane invocation...",
   diceState: "idle",
   diceText: "Awaiting...",
-  params: { alpha: "10%", b: "0.003 ETH", k: "2", r: "0.001", bond: "0.001 ETH", fee: "2%" },
+  params: { alpha: "10%", b: "0.003", k: "2", r: "0.001", bond: "0.001", fee: "2%" },
 };
 
 function reducer(state: MarketState, action: Action): MarketState {
@@ -205,7 +205,7 @@ function reducer(state: MarketState, action: Action): MarketState {
             id: ++feedIdCounter,
             type: "payout",
             agentName: d.agent_name,
-            message: `${d.agent_name}: ${sign}${d.amount} ETH (total: ${d.total_earned} ETH)`,
+            message: `${d.agent_name}: ${sign}${d.amount} (total: ${d.total_earned})`,
             amount: d.amount,
             color: d.amount >= 0 ? "#00e868" : "#ff3040",
           },
