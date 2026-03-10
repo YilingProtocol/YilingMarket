@@ -5,8 +5,9 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ExternalLink } from "lucide-react";
+import { createPublicClient, http } from "viem";
 
-import { CHAINS } from "@/lib/contracts";
+import { CHAINS, CONTRACT_ABI } from "@/lib/contracts";
 
 const LightPillar = dynamic(() => import("@/components/LightPillar"), {
   ssr: false,
@@ -21,24 +22,27 @@ export default function LandingPage() {
   const [marketCount, setMarketCount] = useState(0);
 
   useEffect(() => {
-    const urls = Object.values(CHAINS).map((c) => c.apiUrl).filter(Boolean);
+    const chains = Object.values(CHAINS);
     Promise.all(
-      urls.map((url) =>
-        fetch(`${url}/api/stats`)
-          .then((r) => (r.ok ? r.json() : null))
-          .catch(() => null)
-      )
-    ).then((results) => {
-      let agents = 0;
-      let markets = 0;
-      for (const data of results) {
-        if (data) {
-          agents += data.total_agents || 0;
-          markets += data.total_markets || 0;
-        }
-      }
-      if (agents > 0) setAgentCount(agents);
-      if (markets > 0) setMarketCount(markets);
+      chains.map((chain) => {
+        const client = createPublicClient({
+          chain: { id: chain.chainId, name: chain.name, nativeCurrency: chain.nativeCurrency, rpcUrls: { default: { http: [chain.rpcUrl] } } },
+          transport: http(chain.rpcUrl),
+        });
+        return client
+          .readContract({
+            address: chain.contractAddress,
+            abi: CONTRACT_ABI,
+            functionName: "getMarketCount",
+          })
+          .then((count) => Number(count))
+          .catch(() => 0);
+      })
+    ).then((counts) => {
+      const totalMarkets = counts.reduce((a, b) => a + b, 0);
+      setMarketCount(totalMarkets);
+      // 7 AI agents per chain
+      setAgentCount(chains.length * 7);
     });
   }, []);
 

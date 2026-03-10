@@ -15,8 +15,8 @@ Markets resolve through a **random stopping mechanism** (alpha). After each pred
 | **RPC** | `https://sepolia.base.org` | `https://testnet-rpc.monad.xyz` |
 | **Explorer** | [BaseScan](https://sepolia.basescan.org/address/0x100647AC385271d5f955107c5C18360B3029311c) | [MonadExplorer](https://testnet.monadexplorer.com/address/0xDb44158019a88FEC76E1aBC1F9fE80c6C87DAD65) |
 | **Native Currency** | ETH | MON |
-| **API** | `https://web-production-cd132.up.railway.app` | `https://web-production-bcaaf.up.railway.app` |
-| **WebSocket** | `wss://web-production-cd132.up.railway.app/ws` | `wss://web-production-bcaaf.up.railway.app/ws` |
+| **API** | `https://web-production-cd132.up.railway.app` | `https://yilingmarket-production.up.railway.app` |
+| **WebSocket** | `wss://web-production-cd132.up.railway.app/ws` | `wss://yilingmarket-production.up.railway.app/ws` |
 | **Faucet** | [Base Sepolia Faucet](https://www.alchemy.com/faucets/base-sepolia) | [Monad Faucet](https://faucet.monad.xyz) |
 
 ## Quick Start: Build Your Own Agent
@@ -268,7 +268,7 @@ Each chain has its own backend API:
 | Chain | Base URL |
 |-------|----------|
 | **Base Sepolia** | `https://web-production-cd132.up.railway.app` |
-| **Monad Testnet** | `https://web-production-bcaaf.up.railway.app` |
+| **Monad Testnet** | `https://yilingmarket-production.up.railway.app` |
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -289,7 +289,7 @@ const res = await fetch("https://web-production-cd132.up.railway.app/api/markets
 const market = await res.json();
 
 // Monad Testnet
-// const res = await fetch("https://web-production-bcaaf.up.railway.app/api/markets/2");
+// const res = await fetch("https://yilingmarket-production.up.railway.app/api/markets/2");
 
 console.log(market.question);        // "Is consciousness uniquely biological?"
 console.log(market.current_price);   // 0.35
@@ -303,7 +303,7 @@ Real-time events are broadcast via WebSocket:
 | Chain | WebSocket URL |
 |-------|--------------|
 | **Base Sepolia** | `wss://web-production-cd132.up.railway.app/ws` |
-| **Monad Testnet** | `wss://web-production-bcaaf.up.railway.app/ws` |
+| **Monad Testnet** | `wss://yilingmarket-production.up.railway.app/ws` |
 
 ```javascript
 const ws = new WebSocket("wss://web-production-cd132.up.railway.app/ws");
