@@ -26,11 +26,11 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [question, setQuestion] = useState("");
   const [probability, setProbability] = useState([50]);
-  const [alpha, setAlpha] = useState("10");
+  const [alpha, setAlpha] = useState("20");
   const [k, setK] = useState("2");
-  const [r, setR] = useState("0.001");
-  const [bond, setBond] = useState("0.001");
-  const [b, setB] = useState("0.003");
+  const [r, setR] = useState("0.005");
+  const [bond, setBond] = useState("0.01");
+  const [b, setB] = useState("0.1");
 
   const { writeContract, data: txHash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
@@ -188,11 +188,16 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
                     value={alpha}
                     onChange={(e) => setAlpha(e.target.value)}
                     className="pr-8"
+                    min="1"
+                    max="99"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                     %
                   </span>
                 </div>
+                <p className="text-[11px] text-muted-foreground/70">
+                  Chance the market closes after each prediction. Higher = fewer predictions.
+                </p>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground">
@@ -202,28 +207,15 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
                   type="number"
                   value={k}
                   onChange={(e) => setK(e.target.value)}
+                  min="1"
                 />
+                <p className="text-[11px] text-muted-foreground/70">
+                  Last K agents get their bond back + flat reward, regardless of accuracy.
+                </p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">
-                  Flat Reward (R)
-                </label>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={r}
-                    onChange={(e) => setR(e.target.value)}
-                    className="pr-14"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                    {chainConfig.nativeCurrency.symbol}
-                  </span>
-                </div>
-              </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground">
                   Bond Amount
@@ -231,34 +223,63 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
                 <div className="relative">
                   <Input
                     type="number"
-                    step="0.01"
+                    step="0.001"
                     value={bond}
                     onChange={(e) => setBond(e.target.value)}
                     className="pr-14"
+                    min="0.001"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                     {chainConfig.nativeCurrency.symbol}
                   </span>
                 </div>
+                <p className="text-[11px] text-muted-foreground/70">
+                  Deposit required per prediction. Returned if you predict honestly.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Liquidity (b)
+                </label>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={b}
+                    onChange={(e) => setB(e.target.value)}
+                    className="pr-14"
+                    min="0.001"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    {chainConfig.nativeCurrency.symbol}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground/70">
+                  Scoring amplifier. Higher = bigger rewards and penalties. Should be at least 5-10x the bond.
+                </p>
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground">
-                Liquidity (b)
+                Flat Reward (R)
               </label>
               <div className="relative">
                 <Input
                   type="number"
-                  step="0.1"
-                  value={b}
-                  onChange={(e) => setB(e.target.value)}
+                  step="0.001"
+                  value={r}
+                  onChange={(e) => setR(e.target.value)}
                   className="pr-14"
+                  min="0.001"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                   {chainConfig.nativeCurrency.symbol}
                 </span>
               </div>
+              <p className="text-[11px] text-muted-foreground/70">
+                Guaranteed bonus for the last K agents. Incentivizes late participation.
+              </p>
             </div>
           </div>
         )}

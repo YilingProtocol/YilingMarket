@@ -82,9 +82,13 @@ class Orchestrator:
             time.sleep(0.5)
 
             try:
+                # Read the market's actual bond amount from the contract
+                market_params = self.market_client.get_market_params(market_id)
+                market_bond = market_params["bond_amount"]
+
                 # Balance check - skip agent if too low
                 balance = agent.client.w3.eth.get_balance(agent.address)
-                needed = self.bond_amount + 500_000 * agent.client.w3.eth.gas_price
+                needed = market_bond + 500_000 * agent.client.w3.eth.gas_price
                 if balance < needed:
                     print(f"[{agent.name}] Insufficient balance ({balance/1e18:.4f} MON), skipping")
                     self.broadcaster.emit("error", {
@@ -115,7 +119,7 @@ class Orchestrator:
                 prob_wad = max(int(0.01e18), min(int(0.99e18), prob_wad))
 
                 t0 = time.time()
-                receipt = agent.client.predict(market_id, prob_wad, self.bond_amount)
+                receipt = agent.client.predict(market_id, prob_wad, market_bond)
                 confirm_time = round(time.time() - t0, 1)
 
                 tx_hash = receipt["transactionHash"].hex()
