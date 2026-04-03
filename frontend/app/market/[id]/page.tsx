@@ -112,14 +112,14 @@ export default function MarketDetailPage() {
 
   const displayParams = chainParams
     ? {
-        alpha: `${(parseFloat(formatEther(chainParams[0])) * 100).toFixed(0)}%`,
-        b: `${parseFloat(formatEther(chainParams[4])).toFixed(4)} ${chainConfig.nativeCurrency.symbol}`,
+        alpha: `${chainParams[0].toString()}`,
+        b: `${parseFloat(formatEther(chainParams[4])).toFixed(4)}`,
         k: chainParams[1].toString(),
         r: `${parseFloat(formatEther(chainParams[2])).toFixed(4)}`,
-        bond: `${parseFloat(formatEther(chainParams[3])).toFixed(4)} ${chainConfig.nativeCurrency.symbol}`,
-        fee: "2%",
+        bond: `${parseFloat(formatEther(chainParams[3])).toFixed(4)} USDC`,
+        fee: "5%",
       }
-    : market.params;
+    : { alpha: "-", b: "-", k: "-", r: "-", bond: "-", fee: "5%" };
 
   // Use whichever source has more data (WS live vs API history)
   const priceHistory = market.priceHistory.length > historyPriceHistory.length
@@ -138,7 +138,7 @@ export default function MarketDetailPage() {
     ? market.agentPredictions
     : historyAgentPredictions;
 
-  const round = market.round > 0 ? market.round : (history?.prediction_count ?? 0);
+  const round = market.round > 0 ? market.round : (Number(history?.reportCount || 0) ?? 0);
   const agentCount = market.agentCount > 0
     ? market.agentCount
     : Object.keys(agentPredictions).length;

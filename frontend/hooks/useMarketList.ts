@@ -1,64 +1,42 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useChain } from "@/lib/chainContext";
 import type { MarketListItem } from "@/lib/types";
-
-// Hidden test markets (spam/test questions)
-const HIDDEN_MARKET_IDS = new Set<number>([]);
+import { getActiveQueries, wadToPercent, wadToUsdc, APP_SOURCE } from "@/lib/api";
 
 export function useMarketList() {
   const [markets, setMarkets] = useState<MarketListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const marketsRef = useRef<MarketListItem[]>([]);
-  const { selectedChain, chainConfig } = useChain();
 
   const fetchMarkets = useCallback(async () => {
     try {
-      const res = await fetch(`${chainConfig.apiUrl}/api/markets`);
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      const data = await res.json();
+      const queries = await getActiveQueries(APP_SOURCE);
 
-      const symbol = chainConfig.nativeCurrency.symbol;
-
-      const items: MarketListItem[] = data.map((m: {
-        market_id: number;
-        question: string;
-        current_price: number;
-        resolved: boolean;
-        is_active: boolean;
-        prediction_count: number;
-        total_pool: number;
-        creator: string;
-      }) => ({
-        id: m.market_id,
-        question: m.question,
-        probability: Math.round(m.current_price * 100),
-        status: m.resolved ? "resolved" as const : m.is_active ? "live" as const : "standby" as const,
-        predictionCount: m.prediction_count,
-        totalPool: `${m.total_pool.toFixed(4)} ${symbol}`,
-        creator: m.creator || "",
+      const items: MarketListItem[] = queries.map((q) => ({
+        id: Number(q.queryId),
+        question: q.question,
+        probability: wadToPercent(q.currentPrice),
+        status: "live" as const,
+        predictionCount: Number(q.reportCount),
+        totalPool: `${wadToUsdc(q.totalPool)} USDC`,
+        creator: q.creator,
       }));
 
-      const filtered = items.filter((m: MarketListItem) => !HIDDEN_MARKET_IDS.has(m.id)).reverse();
-      marketsRef.current = filtered;
-      setMarkets(filtered);
+      marketsRef.current = items.reverse();
+      setMarkets(marketsRef.current);
       setError(null);
     } catch (err) {
-      // On error, keep showing last known data
       if (marketsRef.current.length === 0) {
         setError(err as Error);
       }
     } finally {
       setIsLoading(false);
     }
-  }, [chainConfig.apiUrl, chainConfig.nativeCurrency.symbol]);
+  }, []);
 
   useEffect(() => {
-    setIsLoading(true);
-    marketsRef.current = [];
-    setMarkets([]);
     fetchMarkets();
     const interval = setInterval(fetchMarkets, 15_000);
     return () => clearInterval(interval);

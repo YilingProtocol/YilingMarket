@@ -5,9 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ExternalLink } from "lucide-react";
-import { createPublicClient, http } from "viem";
-
-import { CHAINS, CONTRACT_ABI } from "@/lib/contracts";
+import { getHealth, getActiveQueries, APP_SOURCE } from "@/lib/api";
 
 const LightPillar = dynamic(() => import("@/components/LightPillar"), {
   ssr: false,
@@ -22,24 +20,19 @@ export default function LandingPage() {
   const [marketCount, setMarketCount] = useState(0);
 
   useEffect(() => {
-    const chain = CHAINS.monad;
-    const client = createPublicClient({
-      chain: { id: chain.chainId, name: chain.name, nativeCurrency: chain.nativeCurrency, rpcUrls: { default: { http: [chain.rpcUrl] } } },
-      transport: http(chain.rpcUrl),
-    });
-    client
-      .readContract({
-        address: chain.contractAddress,
-        abi: CONTRACT_ABI,
-        functionName: "getMarketCount",
-      })
-      .then((count) => {
-        setMarketCount(Number(count));
-        setAgentCount(7);
+    Promise.all([getHealth(), getActiveQueries(APP_SOURCE)])
+      .then(([health, queries]) => {
+        setMarketCount(Number(health.queryCount));
+        // Count unique reporters across all queries
+        const reporters = new Set<string>();
+        queries.forEach((q) => {
+          // We don't have reports in list endpoint, use reportCount as proxy
+        });
+        setAgentCount(queries.length > 0 ? queries.reduce((sum, q) => sum + Number(q.reportCount), 0) : 0);
       })
       .catch(() => {
         setMarketCount(0);
-        setAgentCount(7);
+        setAgentCount(0);
       });
   }, []);
 

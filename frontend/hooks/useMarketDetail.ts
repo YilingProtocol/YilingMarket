@@ -1,56 +1,56 @@
 "use client";
 
-import { useReadContract } from "wagmi";
-import { CONTRACT_ABI } from "@/lib/contracts";
-import { useChain } from "@/lib/chainContext";
+import { useState, useEffect } from "react";
+import { getQueryStatus, type QueryStatus } from "@/lib/api";
 
 export function useMarketDetail(marketId: number) {
-  const { chainConfig } = useChain();
+  const [data, setData] = useState<QueryStatus | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const {
-    data: marketInfo,
-    isLoading: isInfoLoading,
-  } = useReadContract({
-    address: chainConfig.contractAddress,
-    abi: CONTRACT_ABI,
-    functionName: "getMarketInfo",
-    args: [BigInt(marketId)],
-    chainId: chainConfig.chainId,
-    query: { refetchInterval: 30_000 },
-  });
+  useEffect(() => {
+    async function fetchDetail() {
+      try {
+        const status = await getQueryStatus(String(marketId));
+        setData(status);
+      } catch {
+        // silently fail
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-  const {
-    data: params,
-    isLoading: isParamsLoading,
-  } = useReadContract({
-    address: chainConfig.contractAddress,
-    abi: CONTRACT_ABI,
-    functionName: "getMarketParams",
-    args: [BigInt(marketId)],
-    chainId: chainConfig.chainId,
-    query: { refetchInterval: 30_000 },
-  });
+    fetchDetail();
+    const interval = setInterval(fetchDetail, 30_000);
+    return () => clearInterval(interval);
+  }, [marketId]);
 
-  const {
-    data: isActive,
-    isLoading: isActiveLoading,
-  } = useReadContract({
-    address: chainConfig.contractAddress,
-    abi: CONTRACT_ABI,
-    functionName: "isMarketActive",
-    args: [BigInt(marketId)],
-    chainId: chainConfig.chainId,
-    query: { refetchInterval: 30_000 },
-  });
+  // Map to the tuple format that market/[id]/page.tsx expects
+  const marketInfo = data
+    ? [
+        data.question,
+        BigInt(data.currentPrice),
+        data.creator,
+        data.resolved,
+        BigInt(data.totalPool),
+        BigInt(data.reportCount),
+      ] as [string, bigint, string, boolean, bigint, bigint]
+    : undefined;
+
+  const params = data
+    ? [
+        BigInt(data.params.alpha),
+        BigInt(data.params.k),
+        BigInt(data.params.flatReward),
+        BigInt(data.params.bondAmount),
+        BigInt(data.params.liquidityParam),
+        BigInt(data.params.createdAt),
+      ] as [bigint, bigint, bigint, bigint, bigint, bigint]
+    : undefined;
 
   return {
-    marketInfo: marketInfo as
-      | [string, bigint, string, boolean, bigint, bigint]
-      | undefined,
-    params: params as
-      | [bigint, bigint, bigint, bigint, bigint, bigint]
-      | undefined,
-    isActive: isActive as boolean | undefined,
-    isLoading: isInfoLoading || isParamsLoading || isActiveLoading,
+    marketInfo,
+    params,
+    isActive: data ? !data.resolved : undefined,
+    isLoading,
   };
 }
