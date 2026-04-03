@@ -60,7 +60,7 @@ export function Leaderboard({ rankings }: { rankings: LeaderboardEntry[] }) {
               }`}
             >
               {(r.total_eth ?? r.total_mon ?? 0) >= 0 ? "+" : ""}
-              {(r.total_eth ?? r.total_mon ?? 0).toFixed(4)} {chainConfig.nativeCurrency.symbol}
+              {(r.total_eth ?? r.total_mon ?? 0).toFixed(4)} USDC
             </div>
           </div>
         );

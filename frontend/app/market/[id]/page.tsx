@@ -146,9 +146,9 @@ export default function MarketDetailPage() {
   const protocolState = market.protocolState !== "Awaiting arcane invocation..."
     ? market.protocolState
     : history?.resolved
-    ? `Market #${marketId} resolved — ${history.prediction_count} predictions`
+    ? `Market #${marketId} resolved — ${history.reportCount} reports`
     : history
-    ? `Market #${marketId} — ${history.prediction_count} predictions`
+    ? `Market #${marketId} — ${history.reportCount} reports`
     : market.protocolState;
 
   const diceState = market.diceState !== "idle"

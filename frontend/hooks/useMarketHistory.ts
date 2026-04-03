@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getQueryStatus, getAgentReputation, fromWad, type QueryStatus } from "@/lib/api";
+import { getQueryStatus, fromWad, type QueryStatus } from "@/lib/api";
 
 interface RankingEntry {
   agent: string;
@@ -20,23 +20,25 @@ export function useMarketHistory(marketId: number) {
         const status = await getQueryStatus(String(marketId));
         setHistory(status);
 
-        // Build rankings from agent reputations
-        const agentIds = [...new Set(status.reports.map((r) => r.agentId))];
-        const reps = await Promise.all(
-          agentIds.map(async (id) => {
-            try {
-              const rep = await getAgentReputation(id);
-              const report = status.reports.find((r) => r.agentId === id);
-              return {
-                agent: report ? `${report.reporter.slice(0, 6)}...${report.reporter.slice(-4)}` : `Agent #${id}`,
-                total_mon: Number(rep.score),
-              };
-            } catch {
-              return null;
-            }
-          })
-        );
-        setRankings(reps.filter(Boolean) as RankingEntry[]);
+        // Build rankings from reports (reputation API may not be available)
+        const reporterMap = new Map<string, { count: number; agentId: string }>();
+        status.reports.forEach((r) => {
+          const addr = r.reporter.toLowerCase();
+          const existing = reporterMap.get(addr);
+          if (existing) {
+            existing.count += 1;
+          } else {
+            reporterMap.set(addr, { count: 1, agentId: r.agentId });
+          }
+        });
+
+        const ranks: RankingEntry[] = [...reporterMap.entries()]
+          .map(([addr, data]) => ({
+            agent: `${addr.slice(0, 6)}...${addr.slice(-4)}`,
+            total_mon: 0,
+          }))
+          .sort((a, b) => b.total_mon - a.total_mon);
+        setRankings(ranks);
       } catch {
         // silently fail
       } finally {
@@ -57,11 +59,11 @@ export function useMarketHistory(marketId: number) {
     ? [
         {
           label: "Start",
-          value: history.reports.length > 0
-            ? fromWad(history.reports[0].priceBefore) * 100
+          value: (history.reports || []).length > 0
+            ? fromWad((history.reports || [])[0].priceBefore) * 100
             : fromWad(history.currentPrice) * 100,
         },
-        ...history.reports.map((r) => ({
+        ...(history.reports || []).map((r) => ({
           label: getAgentName(r.reporter).substring(0, 6),
           value: fromWad(r.probability) * 100,
         })),
@@ -69,7 +71,7 @@ export function useMarketHistory(marketId: number) {
     : [];
 
   const txList = history
-    ? history.reports.map((r) => ({
+    ? (history.reports || []).map((r) => ({
         agent: getAgentName(r.reporter),
         prob: (fromWad(r.probability) * 100).toFixed(1),
         txHash: "",
@@ -78,7 +80,7 @@ export function useMarketHistory(marketId: number) {
     : [];
 
   const feed = history
-    ? history.reports.map((r, i) => ({
+    ? (history.reports || []).map((r, i) => ({
         id: i + 1,
         type: "reasoning" as const,
         agentName: getAgentName(r.reporter),
@@ -89,7 +91,7 @@ export function useMarketHistory(marketId: number) {
 
   const agentPredictions: Record<string, number> = {};
   if (history) {
-    history.reports.forEach((r) => {
+    (history.reports || []).forEach((r) => {
       const name = getAgentName(r.reporter);
       agentPredictions[name] = (agentPredictions[name] || 0) + 1;
     });
