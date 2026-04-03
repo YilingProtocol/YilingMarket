@@ -151,8 +151,8 @@ export default function MarketDetailPage() {
     ? `Market #${marketId} — ${history.reportCount} reports`
     : market.protocolState;
 
-  const diceState = market.diceState !== "idle"
-    ? market.diceState
+  const diceState: "idle" | "rolling" | "continues" | "resolved" = market.diceState !== "idle"
+    ? market.diceState as "idle" | "rolling" | "continues" | "resolved"
     : history?.resolved
     ? "resolved"
     : "idle";
