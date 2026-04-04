@@ -100,6 +100,14 @@ export async function getActiveQueries(source?: string): Promise<QueryListItem[]
   return data.activeQueries || [];
 }
 
+export async function getResolvedQueries(source?: string): Promise<QueryListItem[]> {
+  const url = source
+    ? `${API_BASE}/queries/resolved?source=${encodeURIComponent(source)}`
+    : `${API_BASE}/queries/resolved`;
+  const data = await apiFetch<{ resolvedQueries?: QueryListItem[] }>(url);
+  return data.resolvedQueries || [];
+}
+
 /** App source identifier — used to filter queries created by this app */
 export const APP_SOURCE = "yiling-market";
 

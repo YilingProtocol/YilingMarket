@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { MarketListItem } from "@/lib/types";
-import { getActiveQueries, wadToPercent, wadToUsdc, APP_SOURCE } from "@/lib/api";
+import { getActiveQueries, getResolvedQueries, wadToPercent, wadToUsdc, APP_SOURCE } from "@/lib/api";
 
 export function useMarketList() {
   const [markets, setMarkets] = useState<MarketListItem[]>([]);
@@ -12,9 +12,12 @@ export function useMarketList() {
 
   const fetchMarkets = useCallback(async () => {
     try {
-      const queries = await getActiveQueries(APP_SOURCE);
+      const [activeQueries, resolvedQueries] = await Promise.all([
+        getActiveQueries(APP_SOURCE),
+        getResolvedQueries(APP_SOURCE),
+      ]);
 
-      const items: MarketListItem[] = queries.map((q) => ({
+      const liveItems: MarketListItem[] = activeQueries.map((q) => ({
         id: Number(q.queryId),
         question: q.question,
         probability: wadToPercent(q.currentPrice),
@@ -24,7 +27,17 @@ export function useMarketList() {
         creator: q.creator,
       }));
 
-      marketsRef.current = items.reverse();
+      const resolvedItems: MarketListItem[] = resolvedQueries.map((q) => ({
+        id: Number(q.queryId),
+        question: q.question,
+        probability: wadToPercent(q.currentPrice),
+        status: "resolved" as const,
+        predictionCount: Number(q.reportCount),
+        totalPool: `${wadToUsdc(q.totalPool)} USDC`,
+        creator: q.creator,
+      }));
+
+      marketsRef.current = [...liveItems, ...resolvedItems].reverse();
       setMarkets(marketsRef.current);
       setError(null);
     } catch (err) {
