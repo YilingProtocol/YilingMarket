@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getQueryStatus, fromWad, type QueryStatus } from "@/lib/api";
 
 interface RankingEntry {
@@ -13,11 +13,14 @@ export function useMarketHistory(marketId: number) {
   const [history, setHistory] = useState<QueryStatus | null>(null);
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const historyRef = useRef<QueryStatus | null>(null);
+  const rankingsRef = useRef<RankingEntry[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const status = await getQueryStatus(String(marketId));
+        historyRef.current = status;
         setHistory(status);
 
         // Build rankings from reports (reputation API may not be available)
@@ -38,9 +41,10 @@ export function useMarketHistory(marketId: number) {
             total_mon: 0,
           }))
           .sort((a, b) => b.total_mon - a.total_mon);
+        rankingsRef.current = ranks;
         setRankings(ranks);
       } catch {
-        // silently fail
+        // Stale-while-error: keep showing last successful data
       } finally {
         setIsLoading(false);
       }

@@ -76,19 +76,27 @@ export interface PayoutPreview {
   rakeRate: string;
 }
 
+// ── Fetch helper (throws on server errors to enable stale-while-error) ───
+
+async function apiFetch<T>(url: string): Promise<T> {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`API ${res.status}: ${res.statusText} — ${url}`);
+  }
+  return res.json();
+}
+
 // ── API Functions ──────────────────────────────────────
 
 export async function getHealth(): Promise<HealthResponse> {
-  const res = await fetch(`${API_BASE}/health`);
-  return res.json();
+  return apiFetch(`${API_BASE}/health`);
 }
 
 export async function getActiveQueries(source?: string): Promise<QueryListItem[]> {
   const url = source
     ? `${API_BASE}/queries/active?source=${encodeURIComponent(source)}`
     : `${API_BASE}/queries/active`;
-  const res = await fetch(url);
-  const data = await res.json();
+  const data = await apiFetch<{ activeQueries?: QueryListItem[] }>(url);
   return data.activeQueries || [];
 }
 
@@ -96,28 +104,23 @@ export async function getActiveQueries(source?: string): Promise<QueryListItem[]
 export const APP_SOURCE = "yiling-market";
 
 export async function getQueryStatus(queryId: string): Promise<QueryStatus> {
-  const res = await fetch(`${API_BASE}/query/${queryId}/status`);
-  return res.json();
+  return apiFetch(`${API_BASE}/query/${queryId}/status`);
 }
 
 export async function getAgentStatus(address: string): Promise<AgentStatus> {
-  const res = await fetch(`${API_BASE}/agent/${address}/status`);
-  return res.json();
+  return apiFetch(`${API_BASE}/agent/${address}/status`);
 }
 
 export async function getAgentReputation(agentId: string): Promise<AgentReputation> {
-  const res = await fetch(`${API_BASE}/agent/${agentId}/reputation`);
-  return res.json();
+  return apiFetch(`${API_BASE}/agent/${agentId}/reputation`);
 }
 
 export async function getPayoutPreview(queryId: string, reporter: string): Promise<PayoutPreview> {
-  const res = await fetch(`${API_BASE}/query/${queryId}/payout/${reporter}`);
-  return res.json();
+  return apiFetch(`${API_BASE}/query/${queryId}/payout/${reporter}`);
 }
 
 export async function getPricing() {
-  const res = await fetch(`${API_BASE}/query/pricing`);
-  return res.json();
+  return apiFetch(`${API_BASE}/query/pricing`);
 }
 
 // ── Helpers ────────────────────────────────────────────

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Bot, Trophy } from "lucide-react";
 import { getActiveQueries, getQueryStatus, fromWad } from "@/lib/api";
 
@@ -13,6 +13,7 @@ interface AgentEntry {
 export function TopAgents() {
   const [agents, setAgents] = useState<AgentEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const agentsRef = useRef<AgentEntry[]>([]);
 
   useEffect(() => {
     async function fetchAgents() {
@@ -46,9 +47,10 @@ export function TopAgents() {
           .sort((a, b) => b.predictions - a.predictions)
           .slice(0, 5);
 
+        agentsRef.current = sorted;
         setAgents(sorted);
       } catch {
-        // silently fail
+        // Stale-while-error: keep showing last successful agent data
       } finally {
         setIsLoading(false);
       }

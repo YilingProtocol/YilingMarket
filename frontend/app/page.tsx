@@ -31,8 +31,7 @@ export default function LandingPage() {
         setAgentCount(queries.length > 0 ? queries.reduce((sum, q) => sum + Number(q.reportCount), 0) : 0);
       })
       .catch(() => {
-        setMarketCount(0);
-        setAgentCount(0);
+        // Stale-while-error: keep showing last successful counts
       });
   }, []);
 

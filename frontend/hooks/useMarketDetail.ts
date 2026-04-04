@@ -1,19 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getQueryStatus, type QueryStatus } from "@/lib/api";
 
 export function useMarketDetail(marketId: number) {
   const [data, setData] = useState<QueryStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const dataRef = useRef<QueryStatus | null>(null);
 
   useEffect(() => {
     async function fetchDetail() {
       try {
         const status = await getQueryStatus(String(marketId));
+        dataRef.current = status;
         setData(status);
       } catch {
-        // silently fail
+        // Stale-while-error: keep showing last successful data
       } finally {
         setIsLoading(false);
       }
