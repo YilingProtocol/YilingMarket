@@ -57,10 +57,9 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
 /** Only EVM chains that wagmi can handle */
 export const EVM_CHAINS = Object.values(CHAINS).filter((c) => c.isEvm);
 
-/** Hub contract lives on Monad, payments go through Base */
+/** Hub contract lives on Monad, payments accepted from any chain */
 export const HUB_CHAIN: ChainKey = "monad";
-export const PAYMENT_CHAIN: ChainKey = "baseSepolia";
-export const DEFAULT_CHAIN: ChainKey = "baseSepolia";
+export const DEFAULT_CHAIN: ChainKey = "monad";
 
 export function getChainByChainId(chainId: number): ChainConfig | undefined {
   return Object.values(CHAINS).find((c) => c.chainId === chainId);
