@@ -76,7 +76,7 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
           liquidityParam: liquidityWad,
           initialPrice,
           creator: address,
-          queryChain: `eip155:${chainConfig.chainId}`,
+          queryChain: chainConfig.caip2,
           source: APP_SOURCE,
         }),
       });
