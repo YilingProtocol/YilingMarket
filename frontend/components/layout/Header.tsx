@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { WalletConnect } from "./WalletConnect";
+import { ChainSwitcher } from "./ChainSwitcher";
 import { ExternalLink, Plus } from "lucide-react";
 
 interface HeaderProps {
@@ -63,10 +64,7 @@ export function Header({ gasPrice, isConnected, isConnecting, onCreateMarket }: 
 
           {/* Right: Actions */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-secondary/50 text-sm font-medium">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#8100D1" }} />
-              <span className="hidden sm:inline text-muted-foreground">Monad Testnet</span>
-            </div>
+            <ChainSwitcher />
             <ThemeToggle />
             {onCreateMarket && (
               <Button
