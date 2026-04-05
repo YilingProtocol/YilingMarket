@@ -1,28 +1,41 @@
 /**
  * x402 Payment Helper for Yiling Market
  * Creates an x402-enabled fetch that signs payments with the user's wallet.
- * Any external developer can use this same pattern.
+ * Supports multiple EVM chains — chain is determined by the selected payment chain.
  */
 
 import { x402Client, x402HTTPClient, wrapFetchWithPayment } from "@x402/fetch";
 import { registerExactEvmScheme } from "@x402/evm/exact/client";
 import { toClientEvmSigner } from "@x402/evm";
 import { createPublicClient, http, type WalletClient } from "viem";
+import type { ChainConfig } from "./contracts";
 
-const MONAD_CHAIN = {
-  id: 10143,
-  name: "Monad Testnet",
-  nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
-  rpcUrls: { default: { http: ["https://testnet-rpc.monad.xyz"] } },
-};
+/**
+ * Build a minimal viem-compatible chain object from ChainConfig.
+ */
+function toViemChain(chain: ChainConfig) {
+  return {
+    id: chain.chainId,
+    name: chain.name,
+    nativeCurrency: chain.nativeCurrency,
+    rpcUrls: { default: { http: [chain.rpcUrl] } },
+  };
+}
 
 /**
  * Create an x402-enabled fetch using the user's connected wallet.
+ * The chain parameter determines which network is used for payment signing.
  */
-export function createX402Fetch(walletClient: WalletClient, address: `0x${string}`) {
+export function createX402Fetch(
+  walletClient: WalletClient,
+  address: `0x${string}`,
+  chain: ChainConfig
+) {
+  const viemChain = toViemChain(chain);
+
   const publicClient = createPublicClient({
-    chain: MONAD_CHAIN,
-    transport: http("https://testnet-rpc.monad.xyz"),
+    chain: viemChain,
+    transport: http(chain.rpcUrl),
   });
 
   // toClientEvmSigner expects signer.address at top level

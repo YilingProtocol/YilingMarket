@@ -1,27 +1,38 @@
 import { http, createConfig } from "wagmi";
 import { defineChain } from "viem";
 import { injected } from "wagmi/connectors";
-import { CHAINS } from "./contracts";
+import { CHAINS, EVM_CHAINS } from "./contracts";
 
-export const monadTestnet = defineChain({
-  id: CHAINS.monad.chainId,
-  name: CHAINS.monad.name,
-  nativeCurrency: CHAINS.monad.nativeCurrency,
-  rpcUrls: {
-    default: { http: [CHAINS.monad.rpcUrl] },
-  },
-  blockExplorers: {
-    default: { name: "Monad Explorer", url: CHAINS.monad.explorerUrl },
-  },
-  testnet: true,
-});
+// Build viem chain definitions dynamically from EVM_CHAINS
+const viemChains = EVM_CHAINS.map((c) =>
+  defineChain({
+    id: c.chainId,
+    name: c.name,
+    nativeCurrency: c.nativeCurrency,
+    rpcUrls: {
+      default: { http: [c.rpcUrl] },
+    },
+    blockExplorers: {
+      default: { name: `${c.name} Explorer`, url: c.explorerUrl },
+    },
+    testnet: c.testnet,
+  })
+);
+
+// Build transports map
+const transports: Record<number, ReturnType<typeof http>> = {};
+for (const c of EVM_CHAINS) {
+  transports[c.chainId] = http(c.rpcUrl);
+}
+
+// Export named chains for direct access if needed
+export const monadTestnet = viemChains.find((c) => c.id === CHAINS.monad.chainId)!;
+export const baseSepolia = viemChains.find((c) => c.id === CHAINS.baseSepolia.chainId)!;
 
 export const config = createConfig({
-  chains: [monadTestnet],
+  chains: viemChains as [typeof viemChains[0], ...typeof viemChains],
   connectors: [injected()],
-  transports: {
-    [monadTestnet.id]: http(CHAINS.monad.rpcUrl),
-  },
+  transports,
   ssr: true,
   multiInjectedProviderDiscovery: false,
 });

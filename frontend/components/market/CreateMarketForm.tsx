@@ -54,7 +54,7 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
     setError("");
 
     try {
-      const x402Fetch = createX402Fetch(walletClient, address);
+      const x402Fetch = createX402Fetch(walletClient, address, chainConfig);
 
       const initialPrice = parseEther((probability[0] / 100).toString()).toString();
       const alphaWad = parseEther((Number(alpha) / 100).toString()).toString();

@@ -26,7 +26,8 @@ export function ChainSwitcher() {
   const handleSelect = (key: ChainKey) => {
     setSelectedChain(key);
     const target = CHAINS[key];
-    if (walletChainId !== target.chainId) {
+    // Only switch wallet chain for EVM chains (wagmi can't handle Solana etc.)
+    if (target.isEvm && walletChainId !== target.chainId) {
       switchChain({ chainId: target.chainId });
     }
     setOpen(false);
