@@ -1,12 +1,12 @@
 "use client";
 
 import { useChain } from "@/lib/chainContext";
-import { CHAINS, type ChainKey } from "@/lib/contracts";
+import { CHAINS, EVM_CHAINS, type ChainKey } from "@/lib/contracts";
 import { useSwitchChain, useChainId } from "wagmi";
 import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-const chainEntries = Object.values(CHAINS);
+const chainEntries = EVM_CHAINS;
 
 export function ChainSwitcher() {
   const { selectedChain, setSelectedChain, chainConfig } = useChain();
