@@ -65,7 +65,10 @@ export function CreateMarketForm({ onClose, onSuccess, alwaysOpen }: CreateMarke
 
       const res = await x402Fetch(`${API_BASE}/query/create`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-PREFERRED-CHAIN": chainConfig.caip2,
+        },
         body: JSON.stringify({
           question,
           bondPool: fundingWad,
