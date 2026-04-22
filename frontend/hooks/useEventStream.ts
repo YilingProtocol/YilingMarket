@@ -3,13 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import type { WSMessage } from "@/lib/types";
 
-const SSE_URL = "https://api.yilingprotocol.com/events/stream";
+const STREAM_URL = "https://api.yilingprotocol.com/events/stream";
 
 /**
- * Real-time updates via Protocol API SSE stream.
- * Replaces old WebSocket connection to backend.
+ * Subscribe to real-time updates via the Protocol API Server-Sent Events stream.
  */
-export function useWebSocket() {
+export function useEventStream() {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [lastMessage, setLastMessage] = useState<WSMessage | null>(null);
@@ -19,7 +18,7 @@ export function useWebSocket() {
     setIsConnecting(true);
 
     try {
-      const es = new EventSource(SSE_URL);
+      const es = new EventSource(STREAM_URL);
       eventSourceRef.current = es;
 
       es.onopen = () => {

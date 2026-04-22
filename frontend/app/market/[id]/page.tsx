@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useWebSocket } from "@/hooks/useWebSocket";
+import { useEventStream } from "@/hooks/useEventStream";
 import { useMarket } from "@/hooks/useMarket";
 import { useMarketDetail } from "@/hooks/useMarketDetail";
 import { useMarketHistory } from "@/hooks/useMarketHistory";
@@ -81,7 +81,7 @@ export default function MarketDetailPage() {
   const marketId = Number(params.id);
 
   const { chainConfig } = useChain();
-  const { lastMessage } = useWebSocket();
+  const { lastMessage } = useEventStream();
   const market = useMarket(lastMessage, marketId);
   const { marketInfo, params: chainParams, isActive, isLoading } = useMarketDetail(marketId);
   const {
