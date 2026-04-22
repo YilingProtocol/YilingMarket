@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { getQueryStatus, fromWad, type QueryStatus } from "@/lib/api";
+import { useMemo } from "react";
+import { fromWad } from "@/lib/api";
+import { useMarketStatus } from "./useMarketDetail";
 
 interface RankingEntry {
   agent: string;
@@ -9,106 +10,80 @@ interface RankingEntry {
   total_eth?: number;
 }
 
+function shortAddress(address: string): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
 export function useMarketHistory(marketId: number) {
-  const [history, setHistory] = useState<QueryStatus | null>(null);
-  const [rankings, setRankings] = useState<RankingEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const historyRef = useRef<QueryStatus | null>(null);
-  const rankingsRef = useRef<RankingEntry[]>([]);
+  const { data: history, isLoading } = useMarketStatus(marketId);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const status = await getQueryStatus(String(marketId));
-        historyRef.current = status;
-        setHistory(status);
-
-        // Build rankings from reports (reputation API may not be available)
-        const reporterMap = new Map<string, { count: number; agentId: string }>();
-        status.reports.forEach((r) => {
-          const addr = r.reporter.toLowerCase();
-          const existing = reporterMap.get(addr);
-          if (existing) {
-            existing.count += 1;
-          } else {
-            reporterMap.set(addr, { count: 1, agentId: r.agentId });
-          }
-        });
-
-        const ranks: RankingEntry[] = [...reporterMap.entries()]
-          .map(([addr, data]) => ({
-            agent: `${addr.slice(0, 6)}...${addr.slice(-4)}`,
-            total_mon: 0,
-          }))
-          .sort((a, b) => b.total_mon - a.total_mon);
-        rankingsRef.current = ranks;
-        setRankings(ranks);
-      } catch {
-        // Stale-while-error: keep showing last successful data
-      } finally {
-        setIsLoading(false);
-      }
+  const derived = useMemo(() => {
+    if (!history) {
+      return {
+        priceHistory: [] as { label: string; value: number }[],
+        txList: [] as { agent: string; prob: string; txHash: string; confirmTime: string }[],
+        feed: [] as {
+          id: number;
+          type: "reasoning";
+          agentName: string;
+          probability: number;
+          reasoning: string;
+        }[],
+        agentPredictions: {} as Record<string, number>,
+        rankings: [] as RankingEntry[],
+      };
     }
 
-    fetchData();
-    const interval = setInterval(fetchData, 15_000);
-    return () => clearInterval(interval);
-  }, [marketId]);
+    const reports = history.reports ?? [];
 
-  const getAgentName = (address: string): string => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
-  const priceHistory = history
-    ? [
-        {
-          label: "Start",
-          value: (history.reports || []).length > 0
-            ? fromWad((history.reports || [])[0].priceBefore) * 100
+    const priceHistory = [
+      {
+        label: "Start",
+        value:
+          reports.length > 0
+            ? fromWad(reports[0].priceBefore) * 100
             : fromWad(history.currentPrice) * 100,
-        },
-        ...(history.reports || []).map((r) => ({
-          label: getAgentName(r.reporter).substring(0, 6),
-          value: fromWad(r.probability) * 100,
-        })),
-      ]
-    : [];
+      },
+      ...reports.map((r) => ({
+        label: shortAddress(r.reporter).substring(0, 6),
+        value: fromWad(r.probability) * 100,
+      })),
+    ];
 
-  const txList = history
-    ? (history.reports || []).map((r) => ({
-        agent: getAgentName(r.reporter),
-        prob: (fromWad(r.probability) * 100).toFixed(1),
-        txHash: "",
-        confirmTime: "",
-      }))
-    : [];
+    const txList = reports.map((r) => ({
+      agent: shortAddress(r.reporter),
+      prob: (fromWad(r.probability) * 100).toFixed(1),
+      txHash: "",
+      confirmTime: "",
+    }));
 
-  const feed = history
-    ? (history.reports || []).map((r, i) => ({
-        id: i + 1,
-        type: "reasoning" as const,
-        agentName: getAgentName(r.reporter),
-        probability: fromWad(r.probability),
-        reasoning: `Predicted ${(fromWad(r.probability) * 100).toFixed(1)}% (moved from ${(fromWad(r.priceBefore) * 100).toFixed(1)}%)`,
-      }))
-    : [];
+    const feed = reports.map((r, i) => ({
+      id: i + 1,
+      type: "reasoning" as const,
+      agentName: shortAddress(r.reporter),
+      probability: fromWad(r.probability),
+      reasoning: `Predicted ${(fromWad(r.probability) * 100).toFixed(1)}% (moved from ${(fromWad(r.priceBefore) * 100).toFixed(1)}%)`,
+    }));
 
-  const agentPredictions: Record<string, number> = {};
-  if (history) {
-    (history.reports || []).forEach((r) => {
-      const name = getAgentName(r.reporter);
+    const agentPredictions: Record<string, number> = {};
+    reports.forEach((r) => {
+      const name = shortAddress(r.reporter);
       agentPredictions[name] = (agentPredictions[name] || 0) + 1;
     });
-  }
+
+    // Rankings: for now, count-based. Once reputation API is wired in,
+    // swap `total_mon: 0` for the real score.
+    const rankings: RankingEntry[] = Object.entries(agentPredictions)
+      .map(([agent]) => ({ agent, total_mon: 0 }))
+      .sort((a, b) => (b.total_mon ?? 0) - (a.total_mon ?? 0));
+
+    return { priceHistory, txList, feed, agentPredictions, rankings };
+  }, [history]);
 
   return {
-    history,
+    history: history ?? null,
     isLoading,
-    priceHistory,
-    txList,
-    feed,
-    agentPredictions,
-    rankings,
-    getAgentName,
+    ...derived,
+    getAgentName: shortAddress,
   };
 }

@@ -1,32 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getQueryStatus, type QueryStatus } from "@/lib/api";
 
+export function marketQueryKey(marketId: number) {
+  return ["market", marketId] as const;
+}
+
+export function useMarketStatus(marketId: number) {
+  return useQuery<QueryStatus>({
+    queryKey: marketQueryKey(marketId),
+    queryFn: () => getQueryStatus(String(marketId)),
+    refetchInterval: 15_000,
+    enabled: Number.isFinite(marketId) && marketId >= 0,
+  });
+}
+
 export function useMarketDetail(marketId: number) {
-  const [data, setData] = useState<QueryStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const dataRef = useRef<QueryStatus | null>(null);
+  const { data, isLoading } = useMarketStatus(marketId);
 
-  useEffect(() => {
-    async function fetchDetail() {
-      try {
-        const status = await getQueryStatus(String(marketId));
-        dataRef.current = status;
-        setData(status);
-      } catch {
-        // Stale-while-error: keep showing last successful data
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchDetail();
-    const interval = setInterval(fetchDetail, 30_000);
-    return () => clearInterval(interval);
-  }, [marketId]);
-
-  // Map to the tuple format that market/[id]/page.tsx expects
   let marketInfo: [string, bigint, string, boolean, bigint, bigint] | undefined;
   let params: [bigint, bigint, bigint, bigint, bigint, bigint] | undefined;
 
