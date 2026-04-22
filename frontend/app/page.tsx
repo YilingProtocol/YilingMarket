@@ -94,7 +94,6 @@ export default function LandingPage() {
 
         {/* Typewriter heading */}
         <div className="text-white/80 text-lg md:text-xl lg:text-2xl font-light leading-relaxed max-w-2xl animate-fadeUp stagger-1">
-          {/* @ts-expect-error -- JSX component, optional props have defaults */}
           <TextType
             text="Are you ready for Self-Resolving Prediction Markets for Unverifiable Outcomes?"
             typingSpeed={115}
