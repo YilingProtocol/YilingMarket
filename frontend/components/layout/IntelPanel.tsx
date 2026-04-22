@@ -1,6 +1,6 @@
 "use client";
 
-import { Leaderboard } from "./Leaderboard";
+import { Leaderboard, type LeaderboardEntry } from "./Leaderboard";
 import { DiceRoll } from "./DiceRoll";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +12,6 @@ interface TxEntry {
   prob: string;
   txHash: string;
   confirmTime: string;
-}
-
-interface LeaderboardEntry {
-  agent: string;
-  total_mon?: number;
-  total_eth?: number;
 }
 
 interface IntelPanelProps {

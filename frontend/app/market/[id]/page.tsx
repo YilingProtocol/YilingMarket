@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEventStream } from "@/hooks/useEventStream";
-import { useMarket } from "@/hooks/useMarket";
 import { useMarketDetail } from "@/hooks/useMarketDetail";
 import { useMarketHistory } from "@/hooks/useMarketHistory";
 import { formatProbability, getMarketStatus } from "@/lib/formatters";
@@ -14,7 +12,6 @@ import { AgentPanel } from "@/components/agents/AgentPanel";
 import { IntelPanel } from "@/components/layout/IntelPanel";
 import { formatEther } from "viem";
 import { ArrowLeft } from "lucide-react";
-import { useChain } from "@/lib/chainContext";
 
 /* ─── Loading Skeleton ─── */
 function DetailSkeleton({ marketId }: { marketId: number }) {
@@ -80,34 +77,37 @@ export default function MarketDetailPage() {
   const params = useParams();
   const marketId = Number(params.id);
 
-  const { chainConfig } = useChain();
-  const { lastMessage } = useEventStream();
-  const market = useMarket(lastMessage, marketId);
   const { marketInfo, params: chainParams, isActive, isLoading } = useMarketDetail(marketId);
   const {
     history,
     isLoading: historyLoading,
-    priceHistory: historyPriceHistory,
-    txList: historyTxList,
-    feed: historyFeed,
-    agentPredictions: historyAgentPredictions,
-    rankings: historyRankings,
+    priceHistory,
+    txList,
+    feed,
+    agentPredictions,
+    rankings,
   } = useMarketHistory(marketId);
 
-  const wsHasData = market.question !== "Connecting to agent system...";
+  const question = marketInfo ? marketInfo[0] : "Loading market...";
+  const currentProb = marketInfo ? formatProbability(marketInfo[1]) : 50;
+  const status = marketInfo
+    ? getMarketStatus(marketInfo[3], isActive ?? false)
+    : "standby";
 
-  const question = marketInfo
-    ? marketInfo[0]
-    : wsHasData
-    ? market.question
-    : "Loading market...";
+  const round = Number(history?.reportCount ?? 0);
+  const agentCount = Object.keys(agentPredictions).length;
+  const maxRounds = 0;
 
-  // On-chain data is always the source of truth for price and status
-  const chainProb = marketInfo ? formatProbability(marketInfo[1]) : null;
-  const chainStatus = marketInfo ? getMarketStatus(marketInfo[3], isActive ?? false) : null;
+  const protocolState = history?.resolved
+    ? `Market #${marketId} resolved — ${history.reportCount} reports`
+    : history
+    ? `Market #${marketId} — ${history.reportCount} reports`
+    : "Awaiting market data…";
 
-  const currentProb = chainProb ?? market.currentProb;
-  const status = chainStatus ?? market.status;
+  const diceState: "idle" | "rolling" | "continues" | "resolved" = history?.resolved
+    ? "resolved"
+    : "idle";
+  const diceText = history?.resolved ? "RESOLVED" : "Awaiting...";
 
   const displayParams = chainParams
     ? {
@@ -119,48 +119,6 @@ export default function MarketDetailPage() {
         fee: "5%",
       }
     : { alpha: "-", b: "-", k: "-", r: "-", bond: "-", fee: "5%" };
-
-  // Use whichever source has more data (WS live vs API history)
-  const priceHistory = market.priceHistory.length > historyPriceHistory.length
-    ? market.priceHistory
-    : historyPriceHistory;
-
-  const txList = market.txList.length > historyTxList.length
-    ? market.txList
-    : historyTxList;
-
-  const feed = market.feed.length > historyFeed.length
-    ? market.feed
-    : historyFeed;
-
-  const agentPredictions = Object.keys(market.agentPredictions).length > Object.keys(historyAgentPredictions).length
-    ? market.agentPredictions
-    : historyAgentPredictions;
-
-  const round = market.round > 0 ? market.round : (Number(history?.reportCount || 0) ?? 0);
-  const agentCount = market.agentCount > 0
-    ? market.agentCount
-    : Object.keys(agentPredictions).length;
-
-  const protocolState = market.protocolState !== "Awaiting arcane invocation..."
-    ? market.protocolState
-    : history?.resolved
-    ? `Market #${marketId} resolved — ${history.reportCount} reports`
-    : history
-    ? `Market #${marketId} — ${history.reportCount} reports`
-    : market.protocolState;
-
-  const diceState: "idle" | "rolling" | "continues" | "resolved" = market.diceState !== "idle"
-    ? market.diceState as "idle" | "rolling" | "continues" | "resolved"
-    : history?.resolved
-    ? "resolved"
-    : "idle";
-
-  const diceText = market.diceText !== "Awaiting..."
-    ? market.diceText
-    : history?.resolved
-    ? "RESOLVED"
-    : "Awaiting...";
 
   return (
     <div className="min-h-dvh bg-background">
@@ -176,7 +134,7 @@ export default function MarketDetailPage() {
           <span className="text-sm">Back to Markets</span>
         </Link>
 
-        {isLoading && historyLoading && !wsHasData ? (
+        {isLoading && historyLoading ? (
           <DetailSkeleton marketId={marketId} />
         ) : (
           /* Responsive Layout: 1-col mobile, 2-col tablet, 3-col desktop */
@@ -187,8 +145,8 @@ export default function MarketDetailPage() {
                 marketId={marketId}
                 question={question}
                 status={status}
-                source={market.source}
-                category={market.category}
+                source=""
+                category=""
                 currentProb={currentProb}
                 priceHistory={priceHistory}
               />
@@ -204,8 +162,8 @@ export default function MarketDetailPage() {
             <div className="h-[500px] md:h-[600px] lg:h-[calc(100vh-180px)] lg:min-h-[600px] animate-fadeUp stagger-2">
               <AgentPanel
                 round={round}
-                maxRounds={market.maxRounds}
-                activeAgent={market.activeAgent}
+                maxRounds={maxRounds}
+                activeAgent=""
                 agentCount={agentCount}
                 protocolState={protocolState}
                 feed={feed}
@@ -215,9 +173,9 @@ export default function MarketDetailPage() {
             {/* Right Panel - Intelligence */}
             <div className="h-[500px] md:h-[600px] lg:h-[calc(100vh-180px)] lg:min-h-[600px] animate-fadeUp stagger-4">
               <IntelPanel
-                rankings={historyLoading ? [] : historyRankings.length > 0 ? historyRankings : market.rankings}
+                rankings={historyLoading ? [] : rankings}
                 round={round}
-                maxRounds={market.maxRounds}
+                maxRounds={maxRounds}
                 agentPredictions={agentPredictions}
                 diceState={diceState}
                 diceText={diceText}
