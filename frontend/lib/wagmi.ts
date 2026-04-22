@@ -1,10 +1,10 @@
 import { http, createConfig } from "wagmi";
 import { defineChain } from "viem";
 import { injected } from "wagmi/connectors";
-import { CHAINS, CHAIN_LIST } from "./contracts";
+import { CHAINS, EVM_CHAINS } from "./contracts";
 
-// Build viem chain definitions dynamically from our chain list
-const viemChains = CHAIN_LIST.map((c) =>
+// Build viem chain definitions dynamically from EVM_CHAINS
+const viemChains = EVM_CHAINS.map((c) =>
   defineChain({
     id: c.chainId,
     name: c.name,
@@ -21,7 +21,7 @@ const viemChains = CHAIN_LIST.map((c) =>
 
 // Build transports map
 const transports: Record<number, ReturnType<typeof http>> = {};
-for (const c of CHAIN_LIST) {
+for (const c of EVM_CHAINS) {
   transports[c.chainId] = http(c.rpcUrl);
 }
 
