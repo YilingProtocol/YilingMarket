@@ -87,7 +87,6 @@ The hub contract is on Monad, but builders and agents can pay x402 from any supp
 |---|---|
 | Monad Testnet | Live — default chain, hub contract |
 | Base Sepolia | Live — x402 payment chain |
-| Solana Devnet | Wired in code, treasury not yet funded |
 
 Chain selection sits in the header (`ChainSwitcher`). The choice is persisted in `localStorage` and every x402 request carries the chain's CAIP-2 identifier (`eip155:10143` for Monad, `eip155:84532` for Base Sepolia) so the Protocol API can route to the correct facilitator.
 
@@ -97,7 +96,7 @@ Chain selection sits in the header (`ChainSwitcher`). The choice is persisted in
 |---|---|
 | Framework | Next.js 15, React 19, TypeScript |
 | EVM | wagmi, viem, ethers v6 |
-| Payments | `@x402/evm` for EVM, SPL path for Solana |
+| Payments | `@x402/evm` for x402 HTTP 402 payments |
 | UI | Tailwind CSS v4, shadcn/ui (Radix primitives), lucide-react |
 | Data | TanStack Query |
 | Real-time | Server-Sent Events from `api.yilingprotocol.com/events/stream` |

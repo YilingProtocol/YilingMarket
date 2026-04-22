@@ -1,12 +1,10 @@
 "use client";
 
 import { useChain } from "@/lib/chainContext";
-import { CHAINS, EVM_CHAINS, type ChainKey } from "@/lib/contracts";
+import { CHAINS, CHAIN_LIST, type ChainKey } from "@/lib/contracts";
 import { useSwitchChain, useChainId } from "wagmi";
 import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-
-const chainEntries = EVM_CHAINS;
 
 export function ChainSwitcher() {
   const { selectedChain, setSelectedChain, chainConfig } = useChain();
@@ -26,8 +24,7 @@ export function ChainSwitcher() {
   const handleSelect = (key: ChainKey) => {
     setSelectedChain(key);
     const target = CHAINS[key];
-    // Only switch wallet chain for EVM chains (wagmi can't handle Solana etc.)
-    if (target.isEvm && walletChainId !== target.chainId) {
+    if (walletChainId !== target.chainId) {
       switchChain({ chainId: target.chainId });
     }
     setOpen(false);
@@ -52,7 +49,7 @@ export function ChainSwitcher() {
           <div className="px-3 py-2 border-b border-border">
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Select Network</p>
           </div>
-          {chainEntries.map((chain) => (
+          {CHAIN_LIST.map((chain) => (
             <button
               key={chain.key}
               onClick={() => handleSelect(chain.key)}
