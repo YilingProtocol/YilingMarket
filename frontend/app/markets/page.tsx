@@ -45,12 +45,7 @@ export default function Home() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Header
-        gasPrice="--"
-        isConnected={false}
-        isConnecting={false}
-        onCreateMarket={() => setShowCreateModal(true)}
-      />
+      <Header onCreateMarket={() => setShowCreateModal(true)} />
 
       <main className="container mx-auto px-6 py-8 md:py-12 max-w-7xl">
         {/* Featured + Trending Row */}

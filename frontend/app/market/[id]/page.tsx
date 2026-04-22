@@ -80,7 +80,7 @@ export default function MarketDetailPage() {
   const marketId = Number(params.id);
 
   const { chainConfig } = useChain();
-  const { isConnected: wsConnected, isConnecting: wsConnecting, lastMessage } = useWebSocket();
+  const { lastMessage } = useWebSocket();
   const market = useMarket(lastMessage, marketId);
   const { marketInfo, params: chainParams, isActive, isLoading } = useMarketDetail(marketId);
   const {
@@ -107,8 +107,6 @@ export default function MarketDetailPage() {
 
   const currentProb = chainProb ?? market.currentProb;
   const status = chainStatus ?? market.status;
-
-  const gasPrice = market.gasPrice;
 
   const displayParams = chainParams
     ? {
@@ -165,11 +163,7 @@ export default function MarketDetailPage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Header
-        gasPrice={gasPrice}
-        isConnected={wsConnected}
-        isConnecting={wsConnecting}
-      />
+      <Header />
 
       <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Back Button */}

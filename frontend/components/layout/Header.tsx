@@ -9,13 +9,10 @@ import { ChainSwitcher } from "./ChainSwitcher";
 import { ExternalLink, Plus } from "lucide-react";
 
 interface HeaderProps {
-  gasPrice: string;
-  isConnected: boolean;
-  isConnecting: boolean;
   onCreateMarket?: () => void;
 }
 
-export function Header({ gasPrice, isConnected, isConnecting, onCreateMarket }: HeaderProps) {
+export function Header({ onCreateMarket }: HeaderProps) {
   return (
     <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 safe-top">
       <div className="container mx-auto px-6 py-4">
