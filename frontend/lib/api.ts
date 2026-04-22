@@ -127,6 +127,28 @@ export async function getPayoutPreview(queryId: string, reporter: string): Promi
   return apiFetch(`${API_BASE}/query/${queryId}/payout/${reporter}`);
 }
 
+export interface ClaimResult {
+  queryId: string;
+  reporter: string;
+  txHash?: string;
+  gross: string;
+  rake: string;
+  net: string;
+}
+
+export async function claimPayout(queryId: string, reporter: string): Promise<ClaimResult> {
+  const res = await fetch(`${API_BASE}/query/${queryId}/claim`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reporter }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Claim failed ${res.status}: ${body || res.statusText}`);
+  }
+  return res.json();
+}
+
 export async function getPricing() {
   return apiFetch(`${API_BASE}/query/pricing`);
 }

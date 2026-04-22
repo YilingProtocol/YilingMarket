@@ -9,6 +9,7 @@ import { useMarketHistory } from "@/hooks/useMarketHistory";
 import { formatProbability, getMarketStatus } from "@/lib/formatters";
 import { Header } from "@/components/layout/Header";
 import { MarketPanel } from "@/components/market/MarketPanel";
+import { ClaimPanel } from "@/components/market/ClaimPanel";
 import { AgentPanel } from "@/components/agents/AgentPanel";
 import { IntelPanel } from "@/components/layout/IntelPanel";
 import { formatEther } from "viem";
@@ -181,7 +182,7 @@ export default function MarketDetailPage() {
           /* Responsive Layout: 1-col mobile, 2-col tablet, 3-col desktop */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {/* Left Panel - Market Info (full width on tablet) */}
-            <div className="md:col-span-2 lg:col-span-1 animate-fadeUp">
+            <div className="md:col-span-2 lg:col-span-1 animate-fadeUp space-y-4 md:space-y-6">
               <MarketPanel
                 marketId={marketId}
                 question={question}
@@ -191,6 +192,12 @@ export default function MarketDetailPage() {
                 currentProb={currentProb}
                 priceHistory={priceHistory}
               />
+              {status === "resolved" && history && (
+                <ClaimPanel
+                  marketId={marketId}
+                  reporters={(history.reports ?? []).map((r) => r.reporter)}
+                />
+              )}
             </div>
 
             {/* Middle Panel - Agent Logic */}
